@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARI KBAŞ PANEL | Giriş Sistemi</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600;700&family=Syncopate:wght@400;700&display=swap');
+        
+        :root {
+            --neon-purple: #bc13fe;
+            --cyber-black: #05010a;
+            --card-glass: rgba(20, 10, 35, 0.85);
+        }
+
+        body { 
+            background: var(--cyber-black); 
+            color: #f1f1f1; 
+            font-family: 'Rajdhani', sans-serif;
+            background-image: radial-gradient(circle at 50% 50%, rgba(188, 19, 254, 0.12) 0%, transparent 60%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .cyber-card { 
+            background: var(--card-glass);
+            border: 1px solid rgba(188, 19, 254, 0.2);
+            backdrop-filter: blur(15px);
+            border-radius: 2rem;
+            width: 100%;
+            max-width: 450px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cyber-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--neon-purple), transparent);
+            animation: border-flow 3s linear infinite;
+        }
+
+        @keyframes border-flow {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .cyber-input {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(188, 19, 254, 0.3);
+            border-radius: 1rem;
+            padding: 12px 20px;
+            color: white;
+            outline: none;
+            width: 100%;
+            transition: 0.3s;
+        }
+
+        .cyber-input:focus {
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 10px rgba(188, 19, 254, 0.3);
+        }
+
+        .btn-cyber {
+            background: linear-gradient(90deg, #5a189a, #bc13fe);
+            color: white;
+            font-weight: bold;
+            border-radius: 1rem;
+            padding: 14px;
+            width: 100%;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .btn-cyber:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.5);
+        }
+
+        .font-syncopate { font-family: 'Syncopate', sans-serif; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+
+        .switch-auth {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .switch-auth:hover {
+            color: var(--neon-purple);
+        }
+
+        .admin-access-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cyber-card p-10 shadow-2xl">
+        <div class="admin-access-btn font-orbitron" onclick="adminAccess()">ADMIN ACCESS</div>
+        
+        <div class="text-center mb-8">
+            <h1 class="font-syncopate text-purple-500 font-bold text-lg tracking-tighter mb-2">ARI KBAŞ PANEL</h1>
+            <p id="form-title" class="font-orbitron text-xs text-gray-500 uppercase tracking-widest">Sisteme Giriş Yap</p>
+        </div>
+
+        <div class="space-y-5">
+            <div id="login-fields">
+                <div class="form-group">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-2 mb-1 block">Kullanıcı Adı veya E-posta</label>
+                    <input type="text" id="loginIdent" class="cyber-input" placeholder="Kullanıcı adınızı girin">
+                </div>
+            </div>
+
+            <div id="register-fields" style="display: none;" class="space-y-5">
+                <div class="form-group">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-2 mb-1 block">E-posta Adresi</label>
+                    <input type="email" id="email" class="cyber-input" placeholder="ornek@mail.com">
+                </div>
+                <div class="form-group">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase ml-2 mb-1 block">Ad Soyad</label>
+                    <input type="text" id="fullName" class="cyber-input" placeholder="Adınızı Soyadınızı girin">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="text-[10px] font-bold text-gray-500 uppercase ml-2 mb-1 block">Şifre</label>
+                <input type="password" id="password" class="cyber-input" placeholder="••••••••">
+            </div>
+
+            <button id="auth-btn" class="btn-cyber mt-4">Giriş Yap</button>
+
+            <div class="text-center mt-6">
+                <p id="switch-text" class="switch-auth" onclick="toggleAuth()">
+                    Hesabınız yok mu? Kayıt Olun
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isLogin = true;
+
+        function toggleAuth() {
+            isLogin = !isLogin;
+            document.getElementById('form-title').innerText = isLogin ? 'Sisteme Giriş Yap' : 'Yeni Hesap Oluştur';
+            document.getElementById('auth-btn').innerText = isLogin ? 'Giriş Yap' : 'Kayıt Ol';
+            document.getElementById('register-fields').style.display = isLogin ? 'none' : 'block';
+            document.getElementById('switch-text').innerText = isLogin 
+                ? 'Hesabınız yok mu? Kayıt Olun' 
+                : 'Zaten hesabınız var mı? Giriş Yapın';
+        }
+
+        async function adminAccess() {
+            const pass = prompt("Admin Şifresini Girin:");
+            if (pass === "metin.0913") {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ loginIdent: 'metin.0913', password: 'metin.0913' })
+                });
+                if (res.ok) window.location.href = '/admin';
+                else alert("Hata oluştu!");
+            }
+        }
+
+        document.getElementById('auth-btn').onclick = async () => {
+            const loginIdent = document.getElementById('loginIdent').value;
+            const password = document.getElementById('password').value;
+            
+            let payload = { loginIdent, password };
+            
+            if (!isLogin) {
+                const email = document.getElementById('email').value;
+                const fullName = document.getElementById('fullName').value;
+                payload = { username: loginIdent, email, fullName, password };
+            }
+            
+            const endpoint = isLogin ? '/api/login' : '/api/register';
+            
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    if (isLogin) {
+                        window.location.href = data.role === 'admin' ? '/admin' : '/dashboard';
+                    } else {
+                        alert('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
+                        toggleAuth();
+                    }
+                } else {
+                    alert(data.error || 'İşlem başarısız!');
+                }
+            } catch (err) {
+                alert('Bir bağlantı hatası oluştu.');
+            }
+        };
+    </script>
+</body>
+</html>

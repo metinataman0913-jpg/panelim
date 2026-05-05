@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ömer Arıkbaş Panel | V8.0</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600;700&family=Syncopate:wght@400;700&display=swap');
+        
+        :root {
+            --neon-purple: #bc13fe;
+            --cyber-black: #05010a;
+            --card-glass: rgba(20, 10, 35, 0.85);
+        }
+
+        body { 
+            background: var(--cyber-black); 
+            color: #f1f1f1; 
+            font-family: 'Rajdhani', sans-serif;
+            background-image: radial-gradient(circle at 20% 30%, rgba(188, 19, 254, 0.08) 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        .cyber-card { 
+            background: var(--card-glass);
+            border: 1px solid rgba(188, 19, 254, 0.2);
+            backdrop-filter: blur(12px);
+            border-radius: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .cyber-card:hover { 
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.2);
+        }
+
+        .platform-btn {
+            transition: 0.3s;
+            border: 1px solid rgba(188, 19, 254, 0.1);
+            background: rgba(0,0,0,0.3);
+        }
+
+        .platform-btn.active {
+            background: rgba(188, 19, 254, 0.2);
+            border-color: var(--neon-purple);
+            transform: scale(1.05);
+        }
+
+        .cyber-input {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(188, 19, 254, 0.3);
+            border-radius: 1rem; padding: 12px; color: white; outline: none;
+        }
+
+        .btn-buy {
+            background: linear-gradient(90deg, #5a189a, #bc13fe);
+            transition: 0.3s;
+        }
+
+        .btn-buy:hover { box-shadow: 0 0 15px #bc13fe; }
+
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .animate-marquee { display: inline-block; animation: marquee 15s linear infinite; }
+
+        .floating-support {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #bc13fe, #25d366);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            text-decoration: none;
+        }
+        .floating-support:hover {
+            transform: scale(1.1) rotate(10deg);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Duyuru -->
+    <div class="bg-gradient-to-r from-purple-900 via-purple-600 to-purple-900 p-2 overflow-hidden whitespace-nowrap">
+        <div class="animate-marquee font-bold text-xs uppercase italic">
+            🚀 TÜM SERVİSLER AKTİF! TIKTOK, INSTAGRAM VE YOUTUBE PAKETLERİNDE %50 İNDİRİM BAŞLADI 🚀
+        </div>
+    </div>
+
+    <nav class="p-4 border-b border-purple-900/30 bg-black/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="font-syncopate text-purple-500 font-bold text-sm tracking-tighter">ARI KBAŞ PANEL V8</h1>
+            <div class="flex items-center gap-4">
+                <div class="bg-purple-900/30 px-4 py-1 rounded-full border border-purple-500/30">
+                    <span id="balance-display" class="text-yellow-500 font-bold">0.00 TL</span>
+                </div>
+                <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='/logout'">
+                    <span id="user-display" class="text-xs font-bold text-purple-400">YÜKLENİYOR...</span>
+                    <i class="fas fa-user-circle text-2xl text-purple-400"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-6">
+        
+        <!-- Platform Seçimi -->
+        <div class="cyber-card p-6 mb-8">
+            <h3 class="font-syncopate text-[10px] mb-4 text-gray-400">PLATFORM SEÇİN</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button onclick="changePlatform('ig', this)" class="platform-btn p-4 rounded-2xl flex flex-col items-center gap-2">
+                    <i class="fab fa-instagram text-2xl text-pink-500"></i>
+                    <span class="text-[10px] font-bold">INSTAGRAM</span>
+                </button>
+                <button onclick="changePlatform('tt', this)" class="platform-btn active p-4 rounded-2xl flex flex-col items-center gap-2">
+                    <i class="fab fa-tiktok text-2xl text-white"></i>
+                    <span class="text-[10px] font-bold">TIKTOK</span>
+                </button>
+                <button onclick="changePlatform('yt', this)" class="platform-btn p-4 rounded-2xl flex flex-col items-center gap-2">
+                    <i class="fab fa-youtube text-2xl text-red-600"></i>
+                    <span class="text-[10px] font-bold">YOUTUBE</span>
+                </button>
+                <button onclick="changePlatform('tg', this)" class="platform-btn p-4 rounded-2xl flex flex-col items-center gap-2">
+                    <i class="fab fa-telegram text-2xl text-blue-500"></i>
+                    <span class="text-[10px] font-bold">TELEGRAM</span>
+                </button>
+            </div>
+
+            <div class="mt-6">
+                <label class="text-[10px] text-gray-500 font-bold block mb-2">HİZMET TÜRÜ</label>
+                <select id="serviceType" onchange="renderPackages()" class="cyber-input w-full font-bold">
+                    <!-- JS ile dolacak -->
+                </select>
+            </div>
+        </div>
+
+        <!-- Paketler -->
+        <div id="packageGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <!-- Paketler buraya gelecek -->
+        </div>
+
+    </main>
+
+    <a href="support.html" class="floating-support">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script>
+        // Veri Seti
+        const data = {
+            ig: {
+                name: "INSTAGRAM",
+                services: { followers: "Takipçi (Garantili)", likes: "Beğeni (Global)", views: "Video İzlenme" },
+                basePrices: { followers: 90, likes: 40, views: 20 }
+            },
+            tt: {
+                name: "TIKTOK",
+                services: { followers: "Takipçi (Premium)", likes: "Beğeni (Keşfet)", views: "İzlenme (Anlık)" },
+                basePrices: { followers: 110, likes: 45, views: 25 }
+            },
+            yt: {
+                name: "YOUTUBE",
+                services: { subs: "Abone (Global)", views: "İzlenme (Organik)" },
+                basePrices: { subs: 300, views: 150 }
+            },
+            tg: {
+                name: "TELEGRAM",
+                services: { members: "Kanal Üyesi", postviews: "Post Görüntülenme" },
+                basePrices: { members: 60, postviews: 15 }
+            }
+        };
+
+        let currentPlatform = 'tt'; // Varsayılan TikTok
+        const amounts = [1000, 5000, 10000, 25000, 50000, 100000];
+
+        async function loadData() {
+            const res = await fetch('/api/me');
+            if (res.ok) {
+                const user = await res.json();
+                document.getElementById('user-display').innerText = user.fullName.toUpperCase();
+                document.getElementById('balance-display').innerText = user.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + " TL";
+            } else {
+                window.location.href = '/';
+            }
+        }
+
+        function changePlatform(p, btn) {
+            currentPlatform = p;
+            
+            // Buton aktiflik durumu
+            document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Select box güncelle
+            const serviceSelect = document.getElementById('serviceType');
+            serviceSelect.innerHTML = "";
+            for (let key in data[p].services) {
+                serviceSelect.innerHTML += `<option value="${key}">${data[p].services[key]}</option>`;
+            }
+            
+            renderPackages();
+        }
+
+        function renderPackages() {
+            const grid = document.getElementById('packageGrid');
+            const service = document.getElementById('serviceType').value;
+            const basePrice = data[currentPlatform].basePrices[service];
+            
+            grid.innerHTML = "";
+
+            amounts.forEach(amount => {
+                const totalPrice = Math.ceil((amount / 1000) * basePrice);
+                grid.innerHTML += `
+                    <div class="cyber-card p-6 border-t-2 border-purple-600">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-[9px] font-black text-purple-400 tracking-widest">${data[currentPlatform].name}</span>
+                            <span class="bg-green-500/20 text-green-500 text-[8px] px-2 py-0.5 rounded font-bold">AKTİF</span>
+                        </div>
+                        <h4 class="text-3xl font-black">${amount.toLocaleString()}</h4>
+                        <p class="text-[10px] text-gray-500 font-bold mb-6 uppercase">Adet ${data[currentPlatform].services[service]}</p>
+                        <div class="flex justify-between items-center border-t border-white/5 pt-4">
+                            <div>
+                                <span class="text-2xl font-black">${totalPrice}</span>
+                                <span class="text-xs text-purple-500 font-bold ml-1">TL</span>
+                            </div>
+                            <button onclick="demoSatinAl('${amount}', '${data[currentPlatform].services[service]}', '${totalPrice}')" class="btn-buy text-white px-4 py-2 rounded-lg font-bold text-xs">SATIN AL</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function demoSatinAl(amount, service, price) {
+            const numericPrice = parseFloat(price);
+
+            const res = await fetch('/api/purchase', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ price: numericPrice, service, amount })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                
+                // WhatsApp Mesajı Hazırla
+                const resMe = await fetch('/api/me');
+                const user = await resMe.json();
+                const message = `Selam Başkan, %0A%0A*YENİ SİPARİŞ BİLDİRİMİ*%0A--------------------------%0A👤 *Kullanıcı:* ${user.fullName}%0A📦 *Hizmet:* ${service}%0A🔢 *Miktar:* ${amount}%0A💰 *Tutar:* ${price} TL%0A--------------------------%0ABakiye başarıyla düşüldü, işlem onaylandı.`;
+                const whatsappUrl = `https://wa.me/905514799252?text=${message}`;
+                
+                alert('Ödeme Başarılı! Bakiyenizden düşüldü ve siparişiniz Başkan\'a iletiliyor.');
+                
+                // Sayfayı yenile ki yeni bakiye gözüksün
+                loadData();
+                
+                // WhatsApp'ı aç
+                window.open(whatsappUrl, '_blank');
+            } else {
+                const errorData = await res.json();
+                alert(`Hata: ${errorData.error}`);
+            }
+        }
+
+        // İlk açılışta TikTok'u yükle
+        window.onload = () => {
+            loadData();
+            const ttBtn = document.querySelector('button[onclick*="tt"]');
+            changePlatform('tt', ttBtn);
+        };
+    </script>
+
+</body>
+</html>

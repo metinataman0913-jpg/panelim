@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Balance Manager | Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .admin-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .admin-controls input {
+            width: 80px;
+            padding: 0.4rem;
+        }
+        .btn-delete {
+            background: #ef4444 !important;
+            margin-left: 5px;
+        }
+        .floating-support {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #bc13fe, #25d366);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            text-decoration: none;
+        }
+        .floating-support:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 15px 35px rgba(188, 19, 254, 0.4);
+        }
+        .floating-support::after {
+            content: 'Destek';
+            position: absolute;
+            right: 70px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s;
+            white-space: nowrap;
+        }
+        .floating-support:hover::after {
+            opacity: 1;
+            right: 80px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container dashboard-container" style="max-width: 1100px;">
+        <h1>Admin Yönetim Paneli</h1>
+        
+        <div style="overflow-x: auto;">
+            <table class="user-list">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Kullanıcı Adı</th>
+                        <th>E-posta</th>
+                        <th>Ad Soyad</th>
+                        <th>Bakiye</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="user-table-body">
+                    <!-- Veriler buraya gelecek -->
+                </tbody>
+            </table>
+        </div>
+
+        <button class="logout-btn" onclick="location.href='/logout'">Çıkış Yap</button>
+
+        <h1 style="margin-top: 4rem;">Hizmet Yönetimi (Fiyat Listesi)</h1>
+        <div class="stats-card" style="text-align: left;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 2rem;">
+                <input type="text" id="srv-cat" placeholder="Kategori (Örn: Instagram)">
+                <input type="text" id="srv-name" placeholder="Hizmet Adı">
+                <input type="number" id="srv-price" placeholder="Fiyat (1000 adet)">
+                <input type="number" id="srv-min" placeholder="Min" value="100">
+                <input type="number" id="srv-max" placeholder="Max" value="10000">
+                <button onclick="addService()" style="margin-top: 0;">Ekle</button>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="user-list">
+                    <thead>
+                        <tr>
+                            <th>Kategori</th>
+                            <th>Hizmet Adı</th>
+                            <th>Fiyat</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-services-body">
+                        <!-- Veriler buraya gelecek -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadUsers() {
+            const res = await fetch('/api/users');
+            if (res.ok) {
+                const users = await res.json();
+                const tbody = document.getElementById('user-table-body');
+                tbody.innerHTML = '';
+                
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${user.id}</td>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>${user.fullName}</td>
+                        <td id="balance-${user.id}">₺${user.balance.toLocaleString('tr-TR')}</td>
+                        <td class="admin-controls">
+                            <input type="number" id="amount-${user.id}" placeholder="Miktar" value="100">
+                            <button class="btn-small" onclick="updateBalance(${user.id})">Yükle</button>
+                            <button class="btn-small btn-delete" onclick="deleteUser(${user.id})">Sil</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                window.location.href = '/';
+            }
+        }
+
+        async function updateBalance(userId) {
+            const amount = parseFloat(document.getElementById(`amount-${userId}`).value);
+            if (isNaN(amount)) return alert('Geçerli bir miktar girin.');
+
+            const res = await fetch('/api/admin/update-balance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, amount })
+            });
+
+            if (res.ok) {
+                alert('Bakiye başarıyla yüklendi!');
+                loadUsers();
+            } else {
+                alert('Hata oluştu.');
+            }
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) return;
+
+            const res = await fetch('/api/admin/delete-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId })
+            });
+
+            if (res.ok) {
+                alert('Kullanıcı silindi.');
+                loadUsers();
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Silme hatası.');
+            }
+        }
+
+        loadUsers();
+    </script>
+    <a href="support.html" class="floating-support">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+</body>
+</html>
