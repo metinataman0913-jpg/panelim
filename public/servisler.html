@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMM Panel Tam Liste (%650 Zamlı)</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f8f9fa; padding: 20px; color: #333; }
+        .container { max-width: 100%; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { background: #007bff; color: #fff; padding: 10px; text-align: left; position: sticky; top: 0; }
+        td { padding: 8px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f1f1f1; }
+        .price { font-weight: bold; color: #d9534f; }
+        .cat-row { background: #343a40 !important; color: #fff; font-weight: bold; }
+        .badge { padding: 2px 5px; border-radius: 3px; font-size: 10px; color: #fff; margin-right: 5px; }
+        .b-tg { background: #0088cc; }
+        .b-ig { background: #e1306c; }
+        .b-tt { background: #000; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <input type="text" id="search" placeholder="Servis ID veya Adı ile ara... (Fiyatlar %650 zamlıdır)">
+    <table id="fullTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Servis Açıklaması</th>
+                <th>1000/Fiyat (Zamlı)</th>
+                <th>Min/Max</th>
+                <th>Ort. Süre</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- TELEGRAM -->
+            <tr class="cat-row"><td colspan="5">Telegram Gönderi Görüntüleme Servisleri</td></tr>
+            <tr><td>10348</td><td><span class="badge b-tg">TG</span> Telegram Gönderi İzlenme | Son 1 Gönderi</td><td class="price">0.68 TL</td><td>102 / 147B</td><td>-</td></tr>
+            <tr><td>10349</td><td><span class="badge b-tg">TG</span> Telegram Gönderi İzlenme | Son 5 Gönderi</td><td class="price">3.08 TL</td><td>102 / 147B</td><td>-</td></tr>
+            <tr><td>10350</td><td><span class="badge b-tg">TG</span> Telegram Gönderi İzlenme | Son 10 Gönderi</td><td class="price">6.08 TL</td><td>102 / 147B</td><td>-</td></tr>
+            <tr><td>10351</td><td><span class="badge b-tg">TG</span> Telegram Gönderi İzlenme | Son 15 Gönderi</td><td class="price">9.08 TL</td><td>102 / 147B</td><td>-</td></tr>
+            <tr><td>10352</td><td><span class="badge b-tg">TG</span> Telegram Gönderi İzlenme | Son 20 Gönderi</td><td class="price">12.08 TL</td><td>102 / 147B</td><td>-</td></tr>
+            <tr><td>10353</td><td><span class="badge b-tg">TG</span> Telegram Gönderi İzlenme | Son 30 Gönderi</td><td class="price">18.15 TL</td><td>102 / 147B</td><td>-</td></tr>
+            <tr><td>10354</td><td><span class="badge b-tg">TG</span> Telegram Gönderi İzlenme | Son 50 Gönderi</td><td class="price">30.23 TL</td><td>102 / 147B</td><td>-</td></tr>
+            <tr><td>10355</td><td><span class="badge b-tg">TG</span> Telegram Gönderi İzlenme | Son 100 Gönderi</td><td class="price">60.38 TL</td><td>102 / 147B</td><td>-</td></tr>
+            <tr><td>10356</td><td><span class="badge b-tg">TG</span> Telegram Gönderi İzlenme | Son 200 Gönderi</td><td class="price">120.75 TL</td><td>102 / 147B</td><td>-</td></tr>
+            <tr><td>10357</td><td><span class="badge b-tg">TG</span> Telegram Gönderi İzlenme | Son 500 Gönderi</td><td class="price">301.80 TL</td><td>102 / 147B</td><td>-</td></tr>
+
+            <!-- INSTAGRAM TAKİPÇİ GENEL -->
+            <tr class="cat-row"><td colspan="5">Instagram Takipçi | Karışık & Gerçek Data</td></tr>
+            <tr><td>10401</td><td><span class="badge b-ig">IG</span> Instagram Takipçi | Gerçek Hesaplar | Telafi Yok ⚠️</td><td class="price">57.53 TL</td><td>100 / 100K</td><td>19 dk</td></tr>
+            <tr><td>10204</td><td><span class="badge b-ig">IG</span> Instagram Takipçi | Düşüş Yok | Ömür Boyu ♻️</td><td class="price">132.68 TL</td><td>100 / 500K</td><td>7 saat</td></tr>
+            <tr><td>3005</td><td><span class="badge b-ig">IG</span> Beğeni + Yorum | Doğrulanmış Hesaplar</td><td class="price">225.00 TL</td><td>1 / 1</td><td>-</td></tr>
+            <tr><td>114377</td><td><span class="badge b-tt">TT</span> TikTok Takipçi | Dünya Geneli | Garantili ♻️</td><td class="price">574.80 TL</td><td>5 / 10M</td><td>175 saat</td></tr>
+            <tr><td>7934</td><td><span class="badge b-tt">TT</span> TikTok Gerçek Takipçi | VIP Pakistan</td><td class="price">1105.35 TL</td><td>10 / 1M</td><td>8 saat</td></tr>
+
+            <!-- INSTAGRAM ÖMÜR BOYU TELAFİ LİSTESİ -->
+            <tr class="cat-row"><td colspan="5">Instagram Takipçi | Ömür Boyu Telafi ♻️</td></tr>
+            <tr><td>5614</td><td>Paylaşımlı Gerçek Hesaplar | Günlük 500K</td><td class="price">132.68 TL</td><td>100 / 5M</td><td>4 saat</td></tr>
+            <tr><td>10227</td><td>Eski Gönderili Hesaplar | Düşük Düşüş</td><td class="price">132.68 TL</td><td>50 / 100K</td><td>1 saat</td></tr>
+            <tr><td>9993</td><td>Gerçek Hesaplar | Anında Başlangıç</td><td class="price">137.10 TL</td><td>100 / 100K</td><td>45 saat</td></tr>
+            <tr><td>5582</td><td>+15 Gönderili Eski Hesaplar | %0-3 Düşüş</td><td class="price">150.38 TL</td><td>100 / 5M</td><td>-</td></tr>
+            <tr><td>5600</td><td>Eski Hesaplar | 500K/Gün Hız</td><td class="price">150.38 TL</td><td>100 / 10M</td><td>-</td></tr>
+            <tr><td>9973</td><td>Eski Hesaplar | Düşük Düşüş ⚡</td><td class="price">150.38 TL</td><td>10 / 500K</td><td>54 dk</td></tr>
+            <tr><td>9856</td><td>Gönderili Eski Hesaplar | Günlük 100K</td><td class="price">154.80 TL</td><td>100 / 100K</td><td>45 dk</td></tr>
+            <tr><td>5620</td><td>Düşüş %0-3 | Anında Başlar</td><td class="price">154.80 TL</td><td>10 / 10M</td><td>14 dk</td></tr>
+            <tr><td>6022</td><td>Yüksek Kalite | Günlük 100K</td><td class="price">159.23 TL</td><td>10 / 1M</td><td>7 dk</td></tr>
+            <tr><td>7345</td><td>Eski & Gerçek | Düşüş Yok</td><td class="price">168.08 TL</td><td>10 / 5M</td><td>-</td></tr>
+            <tr><td>7508</td><td>Gerçek Takipçi | %10 Düşüş</td><td class="price">176.93 TL</td><td>50 / 500K</td><td>-</td></tr>
+            <tr><td>9862</td><td>Gerçek Hesaplar | Günlük 150K</td><td class="price">176.93 TL</td><td>10 / 5M</td><td>16 dk</td></tr>
+            <tr><td>10218</td><td>Eski Hesaplar | Düşük Düşüş</td><td class="price">176.93 TL</td><td>10 / 1M</td><td>20 saat</td></tr>
+            <tr><td>5707</td><td>+6 Gönderili | Maksimum Hız</td><td class="price">181.35 TL</td><td>1 / 100M</td><td>1 dk</td></tr>
+            <tr><td>9868</td><td>Yüksek Kalite | Düşüş Yok</td><td class="price">181.35 TL</td><td>1 / 10M</td><td>-</td></tr>
+            <tr><td>5566</td><td>Düşüş Yok | Günlük 500K</td><td class="price">194.55 TL</td><td>50 / 2M</td><td>10 saat</td></tr>
+            <tr><td>2326</td><td>Gerçek ve Bot Karışık | Düşüş Az</td><td class="price">212.25 TL</td><td>100 / 20K</td><td>-</td></tr>
+            <tr><td>9810</td><td>Uygulama Hesapları | Düşüş Yok</td><td class="price">247.65 TL</td><td>50 / 5M</td><td>-</td></tr>
+            <tr><td>4404</td><td>Gerçek | Düşüş Yok | Günde 100K</td><td class="price">260.93 TL</td><td>100 / 200K</td><td>-</td></tr>
+            <tr><td>9816</td><td>Uygulama Kayıtlı | Günlük 500K</td><td class="price">260.93 TL</td><td>10 / 1M</td><td>-</td></tr>
+            <tr><td>3843</td><td>Güney Amerika & Dünya Geneli 🌎</td><td class="price">287.40 TL</td><td>50 / 1M</td><td>-</td></tr>
+            <tr><td>1204</td><td>%0 Düşüş | Ömür Boyu ♻️ BEST🥇</td><td class="price">287.40 TL</td><td>10 / 1M</td><td>-</td></tr>
+            <tr><td>3132</td><td>Gerçek Hesaplar | Anında Başlama</td><td class="price">291.83 TL</td><td>10 / 5M</td><td>-</td></tr>
+            <tr><td>3664</td><td>Profil Fotoğraflı ve Gönderili Gerçek</td><td class="price">318.38 TL</td><td>10 / 10M</td><td>-</td></tr>
+            <tr><td>829</td><td>Gönderili Eski ve Gerçek Hesaplar</td><td class="price">322.80 TL</td><td>50 / 1M</td><td>-</td></tr>
+            <tr><td>842</td><td>Eski Hesaplar | Günlük 15K</td><td class="price">331.65 TL</td><td>10 / 500K</td><td>-</td></tr>
+            <tr><td>6440</td><td>%100 Gönderili Eski Hesaplar</td><td class="price">371.40 TL</td><td>10 / 5M</td><td>-</td></tr>
+            <tr><td>4636</td><td>Gerçek + Karışık | İptal Edilebilir</td><td class="price">375.83 TL</td><td>10 / 1M</td><td>-</td></tr>
+            <tr><td>884</td><td>Tüm Bayrak Türleri Çalışır ⭐</td><td class="price">375.83 TL</td><td>100 / 500K</td><td>-</td></tr>
+            <tr><td>6340</td><td>Eski Hesaplar | Anında Başlangıç</td><td class="price">380.25 TL</td><td>10 / 5M</td><td>-</td></tr>
+            <tr><td>3615</td><td>Gönderili Eski ve Gerçek | İptal Aktif</td><td class="price">389.10 TL</td><td>10 / 100K</td><td>-</td></tr>
+            <tr><td>15</td><td>%100 Gerçek | Günlük 50K</td><td class="price">437.78 TL</td><td>100 / 100K</td><td>-</td></tr>
+            <tr><td>1198</td><td>Tüm Hesap Türleri Aktif</td><td class="price">442.20 TL</td><td>10 / 1M</td><td>-</td></tr>
+            <tr><td>999</td><td>%100 Eski +15 Gönderi</td><td class="price">499.65 TL</td><td>10 / 5M</td><td>-</td></tr>
+            <tr><td>1000</td><td>Gönderili Eski | Günlük 500K</td><td class="price">508.50 TL</td><td>10 / 10M</td><td>-</td></tr>
+            <tr><td>7292</td><td>HQ Gerçek Eski Hesaplar | Sağlayıcı 🏆</td><td class="price">530.63 TL</td><td>10 / 1M</td><td>-</td></tr>
+            <tr><td>14</td><td>Gerçek Hesaplar | Günlük 30K</td><td class="price">574.80 TL</td><td>10 / 500K</td><td>-</td></tr>
+            <tr><td>4489</td><td>Eski Gerçek | %0 Düşüş</td><td class="price">596.93 TL</td><td>10 / 1M</td><td>-</td></tr>
+            <tr><td>890</td><td>İnceleme Bayrağını Devre Dışı Bırakın ❌</td><td class="price">610.20 TL</td><td>10 / 500K</td><td>-</td></tr>
+            <tr><td>863</td><td>Gönderili Eski | Hız: 500K/Gün</td><td class="price">751.65 TL</td><td>250 / 500K</td><td>-</td></tr>
+            <tr><td>5058</td><td>%100 Gerçek Türk Hesaplar 🇹🇷</td><td class="price">3979.28 TL</td><td>10 / 50K</td><td>Anlık</td></tr>
+
+            <!-- ÜLKE BAZLI -->
+            <tr class="cat-row"><td colspan="5">Instagram Takipçi | Ülke Bazlı Hedefleme</td></tr>
+            <tr><td>1201</td><td>Arapça 🇸🇦 | Paylaşımlı Gerçek</td><td class="price">1260.15 TL</td><td>10 / 100K</td><td>-</td></tr>
+            <tr><td>6730</td><td>Portekiz 🇵🇹 | Gönderili Gerçek</td><td class="price">2431.80 TL</td><td>10 / 100K</td><td>-</td></tr>
+            <tr><td>1199</td><td>Japonya 🇯🇵 | Günlük 50K</td><td class="price">2520.23 TL</td><td>10 / 50K</td><td>-</td></tr>
+            <tr><td>1200</td><td>Kore 🇰🇷 | Gönderili Gerçek</td><td class="price">2520.23 TL</td><td>10 / 100K</td><td>-</td></tr>
+            <tr><td>1202</td><td>Brezilya 🇧🇷 | Max 100K</td><td class="price">2608.65 TL</td><td>10 / 100K</td><td>-</td></tr>
+
+            <!-- BEĞENİ -->
+            <tr class="cat-row"><td colspan="5">Instagram Beğeni & Reels İzlenme</td></tr>
+            <tr><td>5540</td><td>Beğeni | Yüksek Kalite Gerçek (Garanti Yok)</td><td class="price">17.70 TL</td><td>10 / 500K</td><td>1 saat</td></tr>
+            <tr><td>5545</td><td>Beğeni | Ömür Boyu ♻️</td><td class="price">19.95 TL</td><td>10 / 500K</td><td>23 dk</td></tr>
+            <tr><td>5904</td><td>%100 Gönderili Eski Hesaplar</td><td class="price">194.55 TL</td><td>50 / 1M</td><td>-</td></tr>
+            <tr><td>10393</td><td>Reels İzlenme | Sınırsız Kapasite</td><td class="price">0.23 TL</td><td>100 / Sınırsız</td><td>34 saat</td></tr>
+
+            <!-- TIKTOK -->
+            <tr class="cat-row"><td colspan="5">TikTok Takipçi Tam Liste</td></tr>
+            <tr><td>6556</td><td>Siparişten Önce Canlı Yayın Açın ❗</td><td class="price">300.68 TL</td><td>10 / 5M</td><td>26 saat</td></tr>
+            <tr><td>6262</td><td>HQ ve Fotoğraflı Profiller</td><td class="price">322.80 TL</td><td>10 / 500B</td><td>-</td></tr>
+            <tr><td>3600</td><td>Düşüş Az | Günlük 100B</td><td class="price">358.20 TL</td><td>10 / 10M</td><td>-</td></tr>
+            <tr><td>5146</td><td>Yüksek Kalite Profiller</td><td class="price">358.20 TL</td><td>10 / 5M</td><td>-</td></tr>
+            <tr><td>5324</td><td>HQ Fotoğraflı | Günlük 2B</td><td class="price">428.93 TL</td><td>10 / 10M</td><td>-</td></tr>
+            <tr><td>5981</td><td>Brezilya 🇧🇷 | %100 HQ</td><td class="price">442.20 TL</td><td>10 / 10M</td><td>-</td></tr>
+            <tr><td>6143</td><td>%100 Gerçek | Günlük 200B</td><td class="price">535.05 TL</td><td>10 / 10M</td><td>-</td></tr>
+            <tr><td>9047</td><td>HQ & Fotoğraflı | En İyi 🌟</td><td class="price">592.50 TL</td><td>10 / 10M</td><td>-</td></tr>
+            <tr><td>16</td><td>%100 Gerçek | Günlük 500K</td><td class="price">663.23 TL</td><td>10 / 1M</td><td>-</td></tr>
+            <tr><td>9070</td><td>Pakistan 🇵🇰 | HQ Hesaplar</td><td class="price">672.08 TL</td><td>10 / 500K</td><td>-</td></tr>
+            <tr><td>245</td><td>Ömür Boyu Otomatik Telafi ♻️</td><td class="price">685.35 TL</td><td>10 / 1M</td><td>-</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.getElementById('search').addEventListener('keyup', function() {
+        let val = this.value.toUpperCase();
+        let rows = document.querySelector("#fullTable tbody").rows;
+        for (let i = 0; i < rows.length; i++) {
+            if (!rows[i].classList.contains('cat-row')) {
+                let text = rows[i].innerText.toUpperCase();
+                rows[i].style.display = text.indexOf(val) > -1 ? "" : "none";
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

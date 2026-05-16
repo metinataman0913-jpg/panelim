@@ -3,283 +3,1138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ömer Arıkbaş Panel | V8.0</title>
+    <title>Ömer Arıkbaş Panel | Müşteri Paneli</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/socket.io/socket.io.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600;700&family=Syncopate:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         
         :root {
-            --neon-purple: #bc13fe;
-            --cyber-black: #05010a;
-            --card-glass: rgba(20, 10, 35, 0.85);
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-main: #050811;
+            --bg-card: rgba(30, 41, 59, 0.6);
         }
 
         body { 
-            background: var(--cyber-black); 
-            color: #f1f1f1; 
-            font-family: 'Rajdhani', sans-serif;
-            background-image: radial-gradient(circle at 20% 30%, rgba(188, 19, 254, 0.08) 0%, transparent 40%);
+            background-color: var(--bg-main); 
+            color: #f8fafc; 
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        .cyber-card { 
-            background: var(--card-glass);
-            border: 1px solid rgba(188, 19, 254, 0.2);
-            backdrop-filter: blur(12px);
-            border-radius: 1.5rem;
+        /* Gelişmiş Arka Plan Blobs */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
+            z-index: -2;
+        }
+
+        .bg-blobs {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.3;
+        }
+
+        .blob {
+            position: absolute;
+            width: 400px; height: 400px;
+            border-radius: 50%;
+            animation: move 20s infinite alternate;
+        }
+
+        .blob-1 { background: #6366f1; top: -100px; left: -100px; }
+        .blob-2 { background: #8b5cf6; bottom: -100px; right: -100px; animation-delay: -5s; }
+        .blob-3 { background: #3b82f6; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: move-center 15s infinite alternate; }
+
+        @keyframes move {
+            from { transform: translate(0, 0) scale(1); }
+            to { transform: translate(100px, 100px) scale(1.2); }
+        }
+
+        @keyframes move-center {
+            from { transform: translate(-50%, -50%) scale(1); }
+            to { transform: translate(-30%, -40%) scale(1.1); }
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 1.25rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
         }
 
-        .cyber-card:hover { 
-            border-color: var(--neon-purple);
-            box-shadow: 0 0 20px rgba(188, 19, 254, 0.2);
+        .tab-btn {
+            padding: 12px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #94a3b8;
+            border-bottom: 2px solid transparent;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            color: white;
+            border-bottom-color: var(--primary);
         }
 
         .platform-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             transition: 0.3s;
-            border: 1px solid rgba(188, 19, 254, 0.1);
-            background: rgba(0,0,0,0.3);
         }
 
         .platform-btn.active {
-            background: rgba(188, 19, 254, 0.2);
-            border-color: var(--neon-purple);
-            transform: scale(1.05);
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
-        .cyber-input {
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(188, 19, 254, 0.3);
-            border-radius: 1rem; padding: 12px; color: white; outline: none;
-        }
-
-        .btn-buy {
-            background: linear-gradient(90deg, #5a189a, #bc13fe);
+        .custom-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 12px;
+            color: white;
+            outline: none;
+            width: 100%;
             transition: 0.3s;
         }
 
-        .btn-buy:hover { box-shadow: 0 0 15px #bc13fe; }
+        .custom-input:focus {
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .primary-btn {
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            padding: 12px;
+            border-radius: 0.75rem;
+            transition: 0.3s;
+        }
+
+        .primary-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
 
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        .animate-marquee { display: inline-block; animation: marquee 15s linear infinite; }
+        .animate-marquee { display: inline-block; animation: marquee 25s linear infinite; }
 
         .floating-support {
             position: fixed;
             bottom: 30px;
             right: 30px;
-            background: linear-gradient(135deg, #bc13fe, #25d366);
-            width: 60px;
-            height: 60px;
+            background: #25d366;
+            width: 55px; height: 55px;
             border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            cursor: pointer; z-index: 1000;
+        }
+
+        /* Hızlı Sipariş Yüzen Buton */
+        .quick-fab {
+            position: fixed;
+            bottom: 30px;
+            right: 100px;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            padding: 12px 24px;
+            border-radius: 100px;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 0.75rem; font-weight: 800;
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5);
+            cursor: pointer; z-index: 2000;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .quick-fab:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.6); }
+        .quick-fab i { font-size: 1rem; margin-right: 8px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.8rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            gap: 12px;
+            min-width: 250px;
+            animation: slideIn 0.3s ease-out;
+            transition: 0.3s;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.info { border-left: 4px solid #6366f1; }
+
+        /* Global Chat */
+        #chat-widget {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 320px;
+            height: 450px;
             z-index: 1000;
-            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(calc(100% - 50px));
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .floating-support:hover {
-            transform: scale(1.1) rotate(10deg);
+        #chat-widget.active { transform: translateY(0); }
+        .chat-header {
+            background: var(--primary);
+            padding: 12px 20px;
+            border-radius: 15px 15px 0 0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+        .chat-body {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .chat-footer {
+            background: rgba(30, 41, 59, 0.95);
+            padding: 10px;
+            border-radius: 0 0 15px 15px;
+            display: flex;
+            gap: 8px;
+        }
+        .chat-msg {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 12px;
+            max-width: 85%;
+        }
+        .chat-msg .user { font-size: 10px; font-weight: 800; color: var(--primary); margin-bottom: 2px; }
+        .chat-msg .text { font-size: 12px; line-height: 1.4; }
     </style>
 </head>
 <body>
 
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
     <!-- Duyuru -->
-    <div class="bg-gradient-to-r from-purple-900 via-purple-600 to-purple-900 p-2 overflow-hidden whitespace-nowrap">
-        <div class="animate-marquee font-bold text-xs uppercase italic">
-            🚀 TÜM SERVİSLER AKTİF! TIKTOK, INSTAGRAM VE YOUTUBE PAKETLERİNDE %50 İNDİRİM BAŞLADI 🚀
+    <div class="bg-indigo-600/10 py-2 overflow-hidden whitespace-nowrap border-b border-white/5">
+        <div id="announcement-text" class="animate-marquee font-bold text-[10px] uppercase tracking-widest text-indigo-400">
+            Yükleniyor...
         </div>
     </div>
 
-    <nav class="p-4 border-b border-purple-900/30 bg-black/50 backdrop-blur-md sticky top-0 z-50">
+    <nav class="p-4 bg-slate-900/40 backdrop-blur-md border-b border-white/5 sticky top-0 z-50">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="font-syncopate text-purple-500 font-bold text-sm tracking-tighter">ARI KBAŞ PANEL V8</h1>
-            <div class="flex items-center gap-4">
-                <div class="bg-purple-900/30 px-4 py-1 rounded-full border border-purple-500/30">
-                    <span id="balance-display" class="text-yellow-500 font-bold">0.00 TL</span>
+            <h1 class="font-extrabold text-xl tracking-tight text-white">Ömer Sosyal Medya <span class="text-indigo-500">VIP Panel</span></h1>
+            <div class="flex items-center gap-6">
+                <div class="hidden md:flex flex-col items-end">
+                    <span id="nav-balance" class="text-sm font-bold text-indigo-400">0.00 TL</span>
                 </div>
-                <div class="flex items-center gap-2 cursor-pointer" onclick="location.href='/logout'">
-                    <span id="user-display" class="text-xs font-bold text-purple-400">YÜKLENİYOR...</span>
-                    <i class="fas fa-user-circle text-2xl text-purple-400"></i>
+                <div class="flex items-center gap-3 pl-6 border-l border-white/10">
+                    <div class="text-right hidden sm:block cursor-pointer" onclick="switchTab('profile')">
+                        <p id="nav-user" class="text-xs font-bold text-white uppercase">Müşteri</p>
+                    </div>
+                    <button onclick="location.href='/logout'" class="text-slate-500 hover:text-red-500 transition-colors ml-2" title="Çıkış Yap">
+                        <i class="fas fa-sign-out-alt text-lg"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    </nav>
+
+        </nav>
 
     <main class="max-w-6xl mx-auto p-6">
         
-        <!-- Platform Seçimi -->
-        <div class="cyber-card p-6 mb-8">
-            <h3 class="font-syncopate text-[10px] mb-4 text-gray-400">PLATFORM SEÇİN</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <button onclick="changePlatform('ig', this)" class="platform-btn p-4 rounded-2xl flex flex-col items-center gap-2">
-                    <i class="fab fa-instagram text-2xl text-pink-500"></i>
-                    <span class="text-[10px] font-bold">INSTAGRAM</span>
-                </button>
-                <button onclick="changePlatform('tt', this)" class="platform-btn active p-4 rounded-2xl flex flex-col items-center gap-2">
-                    <i class="fab fa-tiktok text-2xl text-white"></i>
-                    <span class="text-[10px] font-bold">TIKTOK</span>
-                </button>
-                <button onclick="changePlatform('yt', this)" class="platform-btn p-4 rounded-2xl flex flex-col items-center gap-2">
-                    <i class="fab fa-youtube text-2xl text-red-600"></i>
-                    <span class="text-[10px] font-bold">YOUTUBE</span>
-                </button>
-                <button onclick="changePlatform('tg', this)" class="platform-btn p-4 rounded-2xl flex flex-col items-center gap-2">
-                    <i class="fab fa-telegram text-2xl text-blue-500"></i>
-                    <span class="text-[10px] font-bold">TELEGRAM</span>
-                </button>
+        
+        <!-- Sipariş Başarı Bildirimi -->
+        <div id="order-success-alert" class="hidden mb-8 glass-card border-l-4 border-emerald-500 bg-emerald-500/10 p-6 flex items-center justify-between animate-[slideIn_0.3s_ease-out]">
+            <div class="flex items-center gap-4">
+                <div class="bg-emerald-500/20 p-3 rounded-full">
+                    <i class="fas fa-check-circle text-2xl text-emerald-400"></i>
+                </div>
+                <div>
+                    <h3 class="text-emerald-400 font-black text-lg tracking-tight">Siparişiniz Alındı!</h3>
+                    <p class="text-xs font-bold text-slate-400 mt-1">İşleminiz sıraya alındı, onaylanması bekleniyor.</p>
+                </div>
             </div>
-
-            <div class="mt-6">
-                <label class="text-[10px] text-gray-500 font-bold block mb-2">HİZMET TÜRÜ</label>
-                <select id="serviceType" onchange="renderPackages()" class="cyber-input w-full font-bold">
-                    <!-- JS ile dolacak -->
-                </select>
+            <div class="flex gap-8 text-right hidden sm:flex">
+                <div>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Sipariş Tutarı</p>
+                    <p id="alert-price" class="text-sm font-black text-white">0.00 TL</p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Kalan Bakiye</p>
+                    <p id="alert-balance" class="text-sm font-black text-emerald-400">0.00 TL</p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Saat</p>
+                    <p id="alert-time" class="text-sm font-black text-slate-300">00:00</p>
+                </div>
+            </div>
+        </div>
+<!-- İstatistikler -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="glass-card p-6 border-l-4 border-indigo-500">
+                <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1">Cüzdan Bakiyesi</p>
+                <h2 id="stat-balance" class="text-2xl font-extrabold text-white">0.00 TL</h2>
+            </div>
+            <div class="glass-card p-6 border-l-4 border-emerald-500">
+                <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1">Toplam Harcanan</p>
+                <h2 id="stat-spent" class="text-2xl font-extrabold text-white">0.00 TL</h2>
+            </div>
+            <div class="glass-card p-6 border-l-4 border-amber-500">
+                <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1">Toplam Sipariş</p>
+                <h2 id="stat-orders" class="text-2xl font-extrabold text-white">0</h2>
             </div>
         </div>
 
-        <!-- Paketler -->
-        <div id="packageGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <!-- Paketler buraya gelecek -->
+        <!-- Sekmeler -->
+        <div class="flex gap-4 mb-8 border-b border-white/5 overflow-x-auto">
+            <button onclick="switchTab('quick-order')" id="tab-quick-order" class="tab-btn uppercase tracking-wider">Hızlı Sipariş</button>
+            <button onclick="switchTab('new-order')" id="tab-new-order" class="tab-btn active uppercase tracking-wider">Yeni Sipariş</button>
+            
+            <button onclick="switchTab('transactions')" id="tab-transactions" class="tab-btn uppercase tracking-wider">İşlem Geçmişi</button>
+            <button onclick="switchTab('tickets')" id="tab-tickets" class="tab-btn uppercase tracking-wider">Destek Sistemi</button>
+            <button onclick="switchTab('profile')" id="tab-profile" class="tab-btn uppercase tracking-wider">Profilim</button>
+            <button onclick="switchTab('services')" id="tab-services" class="tab-btn uppercase tracking-wider">Servisler</button>
+            <button onclick="switchTab('referral')" id="tab-referral" class="tab-btn uppercase tracking-wider">Davet Et</button>
         </div>
+
+        <!-- YENİ SİPARİŞ -->
+        <section id="section-new-order">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <div class="lg:col-span-2 glass-card p-8">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Platform Seçin</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <button onclick="changePlatform('Instagram', this)" class="platform-btn p-4 rounded-xl flex flex-col items-center gap-3">
+                            <i class="fab fa-instagram text-2xl text-pink-500"></i>
+                            <span class="text-[11px] font-bold">INSTAGRAM</span>
+                        </button>
+                        <button onclick="changePlatform('Tiktok', this)" class="platform-btn active p-4 rounded-xl flex flex-col items-center gap-3">
+                            <i class="fab fa-tiktok text-2xl text-white"></i>
+                            <span class="text-[11px] font-bold">TIKTOK</span>
+                        </button>
+                        <button onclick="changePlatform('Youtube', this)" class="platform-btn p-4 rounded-xl flex flex-col items-center gap-3">
+                            <i class="fab fa-youtube text-2xl text-red-600"></i>
+                            <span class="text-[11px] font-bold">YOUTUBE</span>
+                        </button>
+                        <button onclick="changePlatform('Telegram', this)" class="platform-btn p-4 rounded-xl flex flex-col items-center gap-3">
+                            <i class="fab fa-telegram text-2xl text-blue-500"></i>
+                            <span class="text-[11px] font-bold">TELEGRAM</span>
+                        </button>
+                    </div>
+
+                    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[11px] text-slate-500 font-bold block mb-2 uppercase">Servis Seçin</label>
+                            <select id="serviceType" onchange="renderPackages()" class="custom-input font-semibold text-sm">
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[11px] text-indigo-400 font-bold block mb-2 uppercase tracking-widest">Hesap Adı / Link</label>
+                            <input type="text" id="targetLink" class="custom-input font-bold text-sm border-indigo-500/30" placeholder="@kullaniciadi veya link">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8">
+                    <h3 class="text-xs font-bold text-white uppercase mb-4">Promosyon Kodu</h3>
+                    <p class="text-[10px] text-slate-500 mb-6">Bir kupon kodunuz varsa buraya girerek bakiye kazanabilirsiniz.</p>
+                    <div class="space-y-4">
+                        <input type="text" id="couponCode" class="custom-input text-center font-bold tracking-widest uppercase" placeholder="KODU GİRİN">
+                        <button onclick="redeemCoupon()" class="primary-btn w-full text-xs">KUPONU KULLAN</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="packageGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <!-- Paketler buraya gelecek -->
+            </div>
+        </section>
+
+        <!-- İŞLEM GEÇMİŞİ -->
+        <section id="section-transactions" class="hidden">
+            <div class="glass-card overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white/[0.03] text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                            <th class="p-4">Tarih</th>
+                            <th class="p-4">İşlem</th>
+                            <th class="p-4 text-center">Tür</th>
+                            <th class="p-4 text-right">Miktar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsTable" class="text-xs">
+                        <!-- İşlemler buraya gelecek -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+
+        <!-- DESTEK SİSTEMİ -->
+        <section id="section-tickets" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 glass-card p-8">
+                    <h3 class="text-sm font-bold text-white uppercase mb-6">Yeni Talep Oluştur</h3>
+                    <div class="space-y-4">
+                        <input type="text" id="ticketSubject" class="custom-input text-xs" placeholder="Konu (Örn: Ödeme Hatası)">
+                        <textarea id="ticketMessage" class="custom-input text-xs h-32" placeholder="Mesajınız..."></textarea>
+                        <button onclick="createTicket()" class="primary-btn w-full text-xs">TALEP GÖNDER</button>
+                    </div>
+                </div>
+                <div class="lg:col-span-2 glass-card p-8">
+                    <h3 class="text-sm font-bold text-white uppercase mb-6">Taleplerim</h3>
+                    <div id="ticketsList" class="space-y-4">
+                        <!-- Talepler buraya gelecek -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROFİLİM -->
+        <section id="section-profile" class="hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass-card p-8">
+                    <h3 class="text-sm font-bold text-white uppercase mb-6">Şifre Değiştir</h3>
+                    <div class="space-y-4">
+                        <input type="password" id="newPass" class="custom-input" placeholder="Yeni Şifre">
+                        <input type="password" id="newPassConfirm" class="custom-input" placeholder="Şifre Tekrar">
+                        <button onclick="changePassword()" class="primary-btn w-full">GÜNCELLE</button>
+                    </div>
+                    <button onclick="location.href='/logout'" class="w-full mt-6 text-xs text-red-500 font-bold hover:underline">Oturumu Kapat</button>
+                </div>
+                <div class="glass-card p-8 bg-indigo-600/5">
+                    <h3 class="text-sm font-bold text-indigo-400 uppercase mb-4">Hesap Özeti</h3>
+                    <div class="space-y-4 text-xs font-semibold">
+                        <div class="flex justify-between border-b border-white/5 pb-2">
+                            <span class="text-slate-500">Ad Soyad</span>
+                            <span id="prof-name" class="text-white">...</span>
+                        </div>
+                        <div class="flex justify-between border-b border-white/5 pb-2">
+                            <span class="text-slate-500">Üyelik Durumu</span>
+                            <span class="text-indigo-400">PLATINUM VIP</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DAVET ET -->
+        <section id="section-referral" class="hidden">
+            <div class="glass-card p-10 text-center">
+                <i class="fas fa-gift text-4xl text-indigo-500 mb-6"></i>
+                <h2 class="text-2xl font-black mb-2">Arkadaşını Davet Et, <span class="text-indigo-500">%10 İndirim</span> Kazan!</h2>
+                <p class="text-slate-400 text-sm max-w-lg mx-auto mb-8">Senin linkinle üye olan her arkadaşın için bakiyene bonus eklenir.</p>
+                <div class="max-w-md mx-auto bg-black/40 p-4 rounded-xl border border-white/5 flex items-center justify-between gap-4">
+                    <span class="text-xs font-bold text-indigo-400">https://arikbaspanel.com/r/user77</span>
+                    <button class="text-[10px] font-bold text-white bg-indigo-600 px-4 py-2 rounded-lg">KOPYALA</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- HIZLI SİPARİŞ -->
+        <section id="section-quick-order" class="hidden">
+            <div class="glass-card p-8 max-w-3xl mx-auto border-t-4 border-indigo-500">
+                <div class="mb-8 border-b border-white/5 pb-4">
+                    <h3 class="text-2xl font-black text-white tracking-tighter italic">HIZLI <span class="text-indigo-500 uppercase">Sipariş</span></h3>
+                    <p class="text-[10px] text-slate-500 font-bold tracking-widest uppercase">Minimum 100 Adet</p>
+                </div>
+
+                <div class="space-y-6">
+                    
+                    <div class="mb-6">
+                        <label class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2 block">Ne Arıyorsunuz?</label>
+                        <input type="text" id="quick-search" onkeyup="filterQuickServices()" class="w-full custom-input text-sm focus:border-indigo-500 outline-none transition-all" placeholder="Servis Ara (Örn: İzlenme, Takipçi)">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2 block">Kategori</label>
+                            <select id="quick-category" onchange="filterQuickServices()" class="w-full custom-input text-sm focus:border-indigo-500 outline-none transition-all cursor-pointer">
+                                <!-- Kategoriler JS ile dolacak -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2 block">Paket</label>
+                            <select id="quick-service" onchange="updateQuickPrice()" class="w-full custom-input text-sm focus:border-indigo-500 outline-none transition-all cursor-pointer">
+                                <!-- Servisler JS ile dolacak -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2 block">Miktar</label>
+                            <input type="number" id="quick-amount" oninput="updateQuickPrice()" value="100" min="100" class="w-full custom-input text-sm focus:border-indigo-500 outline-none transition-all" placeholder="Min 100">
+                        </div>
+                        <div class="flex flex-col justify-end">
+                            <div class="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 text-center">
+                                <span class="text-[10px] text-slate-500 font-bold block uppercase">Toplam</span>
+                                <span id="quick-total" class="text-lg font-black text-white">0.00 TL</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2 block">Link / Kullanıcı Adı</label>
+                        <input type="text" id="quick-link" class="w-full custom-input text-sm focus:border-indigo-500 outline-none transition-all" placeholder="Örn: metin0913">
+                    </div>
+
+                    <div class="pt-4">
+                        <button onclick="submitQuickOrder()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-xl shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2">
+                            <i class="fas fa-bolt"></i>
+                            SİPARİŞİ ONAYLA
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SERVİSLER -->
+        <section id="section-services" class="hidden">
+            <div class="glass-card overflow-hidden">
+                <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                    <h3 class="text-lg font-black text-white uppercase"><i class="fas fa-tags text-emerald-500 mr-2"></i> İndirimli Servisler <span class="bg-emerald-500 text-white text-[10px] px-2 py-1 rounded ml-2 shadow-[0_0_10px_rgba(16,185,129,0.5)]">%100 İndirim</span></h3>
+                    <input type="text" id="serviceSearch" onkeyup="searchServicesDashboard()" placeholder="Servis Ara..." class="custom-input max-w-xs text-sm">
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse" id="servicesTableDashboard">
+                        <thead>
+                            <tr class="bg-white/[0.03] text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                                <th class="p-4">ID</th>
+                                <th class="p-4">Servis Açıklaması</th>
+                                <th class="p-4">1000/Fiyat (İndirimli)</th>
+                                <th class="p-4">Min/Max</th>
+                                <th class="p-4">Ort. Süre</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-xs">
+                            
+            <!-- TELEGRAM -->
+            <tr class="bg-indigo-600/20 font-black text-indigo-400 uppercase tracking-widest text-[10px]"><td colspan="5" class="p-4 border-b border-indigo-500/20">Telegram Gönderi Görüntüleme Servisleri</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10348</td><td class="p-4 text-slate-300"><span class="bg-blue-500 text-white px-1.5 py-0.5 rounded text-[9px] mr-2">TG</span> Telegram Gönderi İzlenme | Son 1 Gönderi</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">0.68 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">102 / 147B</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10349</td><td class="p-4 text-slate-300"><span class="bg-blue-500 text-white px-1.5 py-0.5 rounded text-[9px] mr-2">TG</span> Telegram Gönderi İzlenme | Son 5 Gönderi</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">3.08 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">102 / 147B</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10350</td><td class="p-4 text-slate-300"><span class="bg-blue-500 text-white px-1.5 py-0.5 rounded text-[9px] mr-2">TG</span> Telegram Gönderi İzlenme | Son 10 Gönderi</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">6.08 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">102 / 147B</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10351</td><td class="p-4 text-slate-300"><span class="bg-blue-500 text-white px-1.5 py-0.5 rounded text-[9px] mr-2">TG</span> Telegram Gönderi İzlenme | Son 15 Gönderi</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">9.08 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">102 / 147B</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10352</td><td class="p-4 text-slate-300"><span class="bg-blue-500 text-white px-1.5 py-0.5 rounded text-[9px] mr-2">TG</span> Telegram Gönderi İzlenme | Son 20 Gönderi</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">12.08 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">102 / 147B</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10353</td><td class="p-4 text-slate-300"><span class="bg-blue-500 text-white px-1.5 py-0.5 rounded text-[9px] mr-2">TG</span> Telegram Gönderi İzlenme | Son 30 Gönderi</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">18.15 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">102 / 147B</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10354</td><td class="p-4 text-slate-300"><span class="bg-blue-500 text-white px-1.5 py-0.5 rounded text-[9px] mr-2">TG</span> Telegram Gönderi İzlenme | Son 50 Gönderi</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">30.23 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">102 / 147B</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10355</td><td class="p-4 text-slate-300"><span class="bg-blue-500 text-white px-1.5 py-0.5 rounded text-[9px] mr-2">TG</span> Telegram Gönderi İzlenme | Son 100 Gönderi</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">60.38 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">102 / 147B</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10356</td><td class="p-4 text-slate-300"><span class="bg-blue-500 text-white px-1.5 py-0.5 rounded text-[9px] mr-2">TG</span> Telegram Gönderi İzlenme | Son 200 Gönderi</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">120.75 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">102 / 147B</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10357</td><td class="p-4 text-slate-300"><span class="bg-blue-500 text-white px-1.5 py-0.5 rounded text-[9px] mr-2">TG</span> Telegram Gönderi İzlenme | Son 500 Gönderi</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">301.80 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">102 / 147B</td><td class="p-4 text-slate-300">-</td></tr>
+
+            <!-- INSTAGRAM TAKİPÇİ GENEL -->
+            <tr class="bg-indigo-600/20 font-black text-indigo-400 uppercase tracking-widest text-[10px]"><td colspan="5" class="p-4 border-b border-indigo-500/20">Instagram Takipçi | Karışık & Gerçek Data</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10401</td><td class="p-4 text-slate-300"><span class="bg-pink-500 text-white px-1.5 py-0.5 rounded text-[9px] mr-2">IG</span> Instagram Takipçi | Gerçek Hesaplar | Telafi Yok ⚠️</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">57.53 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">100 / 100K</td><td class="p-4 text-slate-300">19 dk</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10204</td><td class="p-4 text-slate-300"><span class="bg-pink-500 text-white px-1.5 py-0.5 rounded text-[9px] mr-2">IG</span> Instagram Takipçi | Düşüş Yok | Ömür Boyu ♻️</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">132.68 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">100 / 500K</td><td class="p-4 text-slate-300">7 saat</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">3005</td><td class="p-4 text-slate-300"><span class="bg-pink-500 text-white px-1.5 py-0.5 rounded text-[9px] mr-2">IG</span> Beğeni + Yorum | Doğrulanmış Hesaplar</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">225.00 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">1 / 1</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">114377</td><td class="p-4 text-slate-300"><span class="bg-white text-black px-1.5 py-0.5 rounded text-[9px] mr-2">TT</span> TikTok Takipçi | Dünya Geneli | Garantili ♻️</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">574.80 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">5 / 10M</td><td class="p-4 text-slate-300">175 saat</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">7934</td><td class="p-4 text-slate-300"><span class="bg-white text-black px-1.5 py-0.5 rounded text-[9px] mr-2">TT</span> TikTok Gerçek Takipçi | VIP Pakistan</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">1105.35 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 1M</td><td class="p-4 text-slate-300">8 saat</td></tr>
+
+            <!-- INSTAGRAM ÖMÜR BOYU TELAFİ LİSTESİ -->
+            <tr class="bg-indigo-600/20 font-black text-indigo-400 uppercase tracking-widest text-[10px]"><td colspan="5" class="p-4 border-b border-indigo-500/20">Instagram Takipçi | Ömür Boyu Telafi ♻️</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">5614</td><td class="p-4 text-slate-300">Paylaşımlı Gerçek Hesaplar | Günlük 500K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">132.68 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">100 / 5M</td><td class="p-4 text-slate-300">4 saat</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10227</td><td class="p-4 text-slate-300">Eski Gönderili Hesaplar | Düşük Düşüş</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">132.68 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">50 / 100K</td><td class="p-4 text-slate-300">1 saat</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">9993</td><td class="p-4 text-slate-300">Gerçek Hesaplar | Anında Başlangıç</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">137.10 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">100 / 100K</td><td class="p-4 text-slate-300">45 saat</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">5582</td><td class="p-4 text-slate-300">+15 Gönderili Eski Hesaplar | %0-3 Düşüş</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">150.38 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">100 / 5M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">5600</td><td class="p-4 text-slate-300">Eski Hesaplar | 500K/Gün Hız</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">150.38 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">100 / 10M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">9973</td><td class="p-4 text-slate-300">Eski Hesaplar | Düşük Düşüş ⚡</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">150.38 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 500K</td><td class="p-4 text-slate-300">54 dk</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">9856</td><td class="p-4 text-slate-300">Gönderili Eski Hesaplar | Günlük 100K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">154.80 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">100 / 100K</td><td class="p-4 text-slate-300">45 dk</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">5620</td><td class="p-4 text-slate-300">Düşüş %0-3 | Anında Başlar</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">154.80 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 10M</td><td class="p-4 text-slate-300">14 dk</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">6022</td><td class="p-4 text-slate-300">Yüksek Kalite | Günlük 100K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">159.23 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 1M</td><td class="p-4 text-slate-300">7 dk</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">7345</td><td class="p-4 text-slate-300">Eski & Gerçek | Düşüş Yok</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">168.08 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 5M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">7508</td><td class="p-4 text-slate-300">Gerçek Takipçi | %10 Düşüş</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">176.93 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">50 / 500K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">9862</td><td class="p-4 text-slate-300">Gerçek Hesaplar | Günlük 150K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">176.93 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 5M</td><td class="p-4 text-slate-300">16 dk</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10218</td><td class="p-4 text-slate-300">Eski Hesaplar | Düşük Düşüş</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">176.93 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 1M</td><td class="p-4 text-slate-300">20 saat</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">5707</td><td class="p-4 text-slate-300">+6 Gönderili | Maksimum Hız</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">181.35 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">1 / 100M</td><td class="p-4 text-slate-300">1 dk</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">9868</td><td class="p-4 text-slate-300">Yüksek Kalite | Düşüş Yok</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">181.35 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">1 / 10M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">5566</td><td class="p-4 text-slate-300">Düşüş Yok | Günlük 500K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">194.55 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">50 / 2M</td><td class="p-4 text-slate-300">10 saat</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">2326</td><td class="p-4 text-slate-300">Gerçek ve Bot Karışık | Düşüş Az</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">212.25 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">100 / 20K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">9810</td><td class="p-4 text-slate-300">Uygulama Hesapları | Düşüş Yok</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">247.65 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">50 / 5M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">4404</td><td class="p-4 text-slate-300">Gerçek | Düşüş Yok | Günde 100K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">260.93 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">100 / 200K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">9816</td><td class="p-4 text-slate-300">Uygulama Kayıtlı | Günlük 500K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">260.93 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 1M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">3843</td><td class="p-4 text-slate-300">Güney Amerika & Dünya Geneli 🌎</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">287.40 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">50 / 1M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">1204</td><td class="p-4 text-slate-300">%0 Düşüş | Ömür Boyu ♻️ BEST🥇</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">287.40 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 1M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">3132</td><td class="p-4 text-slate-300">Gerçek Hesaplar | Anında Başlama</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">291.83 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 5M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">3664</td><td class="p-4 text-slate-300">Profil Fotoğraflı ve Gönderili Gerçek</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">318.38 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 10M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">829</td><td class="p-4 text-slate-300">Gönderili Eski ve Gerçek Hesaplar</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">322.80 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">50 / 1M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">842</td><td class="p-4 text-slate-300">Eski Hesaplar | Günlük 15K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">331.65 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 500K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">6440</td><td class="p-4 text-slate-300">%100 Gönderili Eski Hesaplar</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">371.40 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 5M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">4636</td><td class="p-4 text-slate-300">Gerçek + Karışık | İptal Edilebilir</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">375.83 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 1M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">884</td><td class="p-4 text-slate-300">Tüm Bayrak Türleri Çalışır ⭐</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">375.83 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">100 / 500K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">6340</td><td class="p-4 text-slate-300">Eski Hesaplar | Anında Başlangıç</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">380.25 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 5M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">3615</td><td class="p-4 text-slate-300">Gönderili Eski ve Gerçek | İptal Aktif</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">389.10 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 100K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">15</td><td class="p-4 text-slate-300">%100 Gerçek | Günlük 50K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">437.78 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">100 / 100K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">1198</td><td class="p-4 text-slate-300">Tüm Hesap Türleri Aktif</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">442.20 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 1M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">999</td><td class="p-4 text-slate-300">%100 Eski +15 Gönderi</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">499.65 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 5M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">1000</td><td class="p-4 text-slate-300">Gönderili Eski | Günlük 500K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">508.50 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 10M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">7292</td><td class="p-4 text-slate-300">HQ Gerçek Eski Hesaplar | Sağlayıcı 🏆</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">530.63 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 1M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">14</td><td class="p-4 text-slate-300">Gerçek Hesaplar | Günlük 30K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">574.80 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 500K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">4489</td><td class="p-4 text-slate-300">Eski Gerçek | %0 Düşüş</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">596.93 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 1M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">890</td><td class="p-4 text-slate-300">İnceleme Bayrağını Devre Dışı Bırakın ❌</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">610.20 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 500K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">863</td><td class="p-4 text-slate-300">Gönderili Eski | Hız: 500K/Gün</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">751.65 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">250 / 500K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">5058</td><td class="p-4 text-slate-300">%100 Gerçek Türk Hesaplar 🇹🇷</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">3979.28 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 50K</td><td class="p-4 text-slate-300">Anlık</td></tr>
+
+            <!-- ÜLKE BAZLI -->
+            <tr class="bg-indigo-600/20 font-black text-indigo-400 uppercase tracking-widest text-[10px]"><td colspan="5" class="p-4 border-b border-indigo-500/20">Instagram Takipçi | Ülke Bazlı Hedefleme</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">1201</td><td class="p-4 text-slate-300">Arapça 🇸🇦 | Paylaşımlı Gerçek</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">1260.15 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 100K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">6730</td><td class="p-4 text-slate-300">Portekiz 🇵🇹 | Gönderili Gerçek</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">2431.80 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 100K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">1199</td><td class="p-4 text-slate-300">Japonya 🇯🇵 | Günlük 50K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">2520.23 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 50K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">1200</td><td class="p-4 text-slate-300">Kore 🇰🇷 | Gönderili Gerçek</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">2520.23 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 100K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">1202</td><td class="p-4 text-slate-300">Brezilya 🇧🇷 | Max 100K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">2608.65 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 100K</td><td class="p-4 text-slate-300">-</td></tr>
+
+            <!-- BEĞENİ -->
+            <tr class="bg-indigo-600/20 font-black text-indigo-400 uppercase tracking-widest text-[10px]"><td colspan="5" class="p-4 border-b border-indigo-500/20">Instagram Beğeni & Reels İzlenme</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">5540</td><td class="p-4 text-slate-300">Beğeni | Yüksek Kalite Gerçek (Garanti Yok)</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">17.70 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 500K</td><td class="p-4 text-slate-300">1 saat</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">5545</td><td class="p-4 text-slate-300">Beğeni | Ömür Boyu ♻️</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">19.95 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 500K</td><td class="p-4 text-slate-300">23 dk</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">5904</td><td class="p-4 text-slate-300">%100 Gönderili Eski Hesaplar</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">194.55 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">50 / 1M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">10393</td><td class="p-4 text-slate-300">Reels İzlenme | Sınırsız Kapasite</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">0.23 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">100 / Sınırsız</td><td class="p-4 text-slate-300">34 saat</td></tr>
+
+            <!-- TIKTOK -->
+            <tr class="bg-indigo-600/20 font-black text-indigo-400 uppercase tracking-widest text-[10px]"><td colspan="5" class="p-4 border-b border-indigo-500/20">TikTok Takipçi Tam Liste</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">6556</td><td class="p-4 text-slate-300">Siparişten Önce Canlı Yayın Açın ❗</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">300.68 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 5M</td><td class="p-4 text-slate-300">26 saat</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">6262</td><td class="p-4 text-slate-300">HQ ve Fotoğraflı Profiller</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">322.80 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 500B</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">3600</td><td class="p-4 text-slate-300">Düşüş Az | Günlük 100B</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">358.20 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 10M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">5146</td><td class="p-4 text-slate-300">Yüksek Kalite Profiller</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">358.20 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 5M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">5324</td><td class="p-4 text-slate-300">HQ Fotoğraflı | Günlük 2B</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">428.93 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 10M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">5981</td><td class="p-4 text-slate-300">Brezilya 🇧🇷 | %100 HQ</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">442.20 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 10M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">6143</td><td class="p-4 text-slate-300">%100 Gerçek | Günlük 200B</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">535.05 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 10M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">9047</td><td class="p-4 text-slate-300">HQ & Fotoğraflı | En İyi 🌟</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">592.50 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 10M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">16</td><td class="p-4 text-slate-300">%100 Gerçek | Günlük 500K</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">663.23 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 1M</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">9070</td><td class="p-4 text-slate-300">Pakistan 🇵🇰 | HQ Hesaplar</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">672.08 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 500K</td><td class="p-4 text-slate-300">-</td></tr>
+            <tr class="border-b border-white/5 hover:bg-white/[0.02]"><td class="p-4 text-slate-300">245</td><td class="p-4 text-slate-300">Ömür Boyu Otomatik Telafi ♻️</td><td class="p-4"><span class="text-red-500/50 line-through text-[10px] mr-1">685.35 TL</span><span class="text-emerald-400 font-bold ml-1 text-sm">0.00 TL</span></td><td class="p-4 text-slate-300">10 / 1M</td><td class="p-4 text-slate-300">-</td></tr>
+        
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+    <!-- User Ticket Modal -->
+    <div id="ticket-modal-user" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden z-[6000] flex justify-center items-center p-4">
+        <div class="glass-card p-8 w-full max-w-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="modal-ticket-subject-user" class="font-bold text-sm text-white">Destek Talebi</h3>
+                <button onclick="document.getElementById('ticket-modal-user').classList.add('hidden')" class="text-slate-500 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="ticket-chat-user" class="space-y-3 max-h-60 overflow-y-auto mb-6 p-4 bg-black/40 rounded-xl text-[11px]"></div>
+            <div class="flex gap-2">
+                <input type="text" id="ticket-reply-msg-user" class="custom-input flex-grow text-xs" placeholder="Mesajınız...">
+                <button id="btn-send-reply-user" class="primary-btn text-xs !py-2 !px-4">GÖNDER</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+            function searchServicesDashboard() {
+                let val = document.getElementById('serviceSearch').value.toUpperCase();
+                let rows = document.querySelector("#servicesTableDashboard tbody").rows;
+                for (let i = 0; i < rows.length; i++) {
+                    if (!rows[i].classList.contains('bg-indigo-600/20')) {
+                        let text = rows[i].innerText.toUpperCase();
+                        rows[i].style.display = text.indexOf(val) > -1 ? "" : "none";
+                    }
+                }
+            }
+            </script>
+        </section>
+        </section>
 
     </main>
 
-    <a href="support.html" class="floating-support">
-        <i class="fab fa-whatsapp"></i>
-    </a>
+    <!-- Toast Bildirimleri -->
+    <div id="toast-container"></div>
+
+    <!-- Global Chat Widget -->
+    <div id="chat-widget">
+        <div class="chat-header" onclick="document.getElementById('chat-widget').classList.toggle('active')">
+            <span class="text-xs font-bold uppercase tracking-widest"><i class="fas fa-comments mr-2"></i> Global Sohbet</span>
+            <i class="fas fa-chevron-up text-[10px]"></i>
+        </div>
+        <div id="chat-body" class="chat-body">
+            <!-- Mesajlar buraya -->
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" class="custom-input text-xs" placeholder="Mesajınız..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()" class="bg-indigo-600 p-2 px-4 rounded-lg"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Bakiye Yükle Modal -->
+    <div id="deposit-modal" class="modal">
+        <div class="glass-card p-8 max-w-md w-full m-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-sm">Bakiye Yükle</h3>
+                <button onclick="closeModal('deposit-modal')" class="text-slate-500"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <button class="border border-indigo-500 bg-indigo-500/10 p-4 rounded-xl text-[10px] font-bold">Kredi Kartı / PayTR</button>
+                    <button class="border border-white/5 p-4 rounded-xl text-[10px] font-bold">EFT / Havale</button>
+                </div>
+                <input type="number" id="depAmount" class="custom-input text-sm" placeholder="Miktar (TL)">
+                <button onclick="alert('Ödeme sayfasına yönlendiriliyorsunuz...')" class="primary-btn w-full text-sm">ÖDEMEYE GİT</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // Veri Seti
-        const data = {
-            ig: {
-                name: "INSTAGRAM",
-                services: { followers: "Takipçi (Garantili)", likes: "Beğeni (Global)", views: "Video İzlenme" },
-                basePrices: { followers: 90, likes: 40, views: 20 }
-            },
-            tt: {
-                name: "TIKTOK",
-                services: { followers: "Takipçi (Premium)", likes: "Beğeni (Keşfet)", views: "İzlenme (Anlık)" },
-                basePrices: { followers: 110, likes: 45, views: 25 }
-            },
-            yt: {
-                name: "YOUTUBE",
-                services: { subs: "Abone (Global)", views: "İzlenme (Organik)" },
-                basePrices: { subs: 300, views: 150 }
-            },
-            tg: {
-                name: "TELEGRAM",
-                services: { members: "Kanal Üyesi", postviews: "Post Görüntülenme" },
-                basePrices: { members: 60, postviews: 15 }
-            }
-        };
-
-        let currentPlatform = 'tt'; // Varsayılan TikTok
+        let allServices = [];
+        let currentPlatform = 'Tiktok';
         const amounts = [1000, 5000, 10000, 25000, 50000, 100000];
 
-        async function loadData() {
-            const res = await fetch('/api/me');
+        const socket = io();
+        let userMe = null;
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'fa-info-circle';
+            if (type === 'success') icon = 'fa-check-circle';
+            if (type === 'error') icon = 'fa-exclamation-circle';
+
+            toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Socket Events
+        socket.on('notification', (data) => {
+            if (userMe && data.userId === userMe.id) {
+                showToast(data.message, data.type);
+                loadAllData(); // Verileri yenile
+            }
+        });
+
+        socket.on('new-message', (msg) => {
+            appendChatMessage(msg);
+        });
+
+        socket.on('chat-history', (history) => {
+            const body = document.getElementById('chat-body');
+            body.innerHTML = '';
+            history.forEach(appendChatMessage);
+        });
+
+        function appendChatMessage(msg) {
+            const body = document.getElementById('chat-body');
+            const div = document.createElement('div');
+            div.className = 'chat-msg';
+            div.innerHTML = `<div class="user">${msg.username}</div><div class="text">${msg.message}</div>`;
+            body.appendChild(div);
+            body.scrollTop = body.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message || !userMe) return;
+            socket.emit('send-message', { userId: userMe.id, username: userMe.username, message });
+            input.value = '';
+        }
+
+        async function loadTransactions() {
+            const res = await fetch('/api/transactions');
             if (res.ok) {
-                const user = await res.json();
-                document.getElementById('user-display').innerText = user.fullName.toUpperCase();
-                document.getElementById('balance-display').innerText = user.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + " TL";
+                const logs = await res.json();
+                const table = document.getElementById('transactionsTable');
+                table.innerHTML = logs.length === 0 ? '<tr><td colspan="4" class="p-10 text-center text-slate-500">Henüz işlem yok.</td></tr>' : '';
+                logs.forEach(log => {
+                    const typeClass = log.type === 'deposit' ? 'text-emerald-500' : 'text-red-500';
+                    table.innerHTML += `
+                        <tr class="hover:bg-white/[0.02] border-b border-white/5">
+                            <td class="p-4 text-slate-500">${new Date(log.createdAt).toLocaleString('tr-TR')}</td>
+                            <td class="p-4 font-bold text-white">${log.description}</td>
+                            <td class="p-4 text-center"><span class="px-2 py-1 rounded text-[8px] font-black uppercase ${log.type === 'deposit' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}">${log.type === 'deposit' ? 'YÜKLEME' : 'HARCAMA'}</span></td>
+                            <td class="p-4 text-right font-black ${typeClass}">${log.type === 'deposit' ? '+' : '-'}${log.amount.toFixed(2)} TL</td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        async function loadAllData() {
+            try {
+                const annRes = await fetch('/api/settings/announcement');
+                if (annRes.ok) {
+                    const annData = await annRes.json();
+                    document.getElementById('announcement-text').innerText = annData.announcement;
+                }
+
+                const statsRes = await fetch('/api/stats');
+                if (statsRes.ok) {
+                    const stats = await statsRes.json();
+                    document.getElementById('nav-balance').innerText = stats.currentBalance.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + " TL";
+                    document.getElementById('stat-balance').innerText = stats.currentBalance.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + " TL";
+                    document.getElementById('stat-spent').innerText = stats.totalSpent.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + " TL";
+                    document.getElementById('stat-orders').innerText = stats.totalOrders;
+                }
+
+                const userRes = await fetch('/api/me');
+                if (userRes.ok) {
+                    userMe = await userRes.json();
+                    document.getElementById('nav-user').innerText = userMe.fullName;
+                    document.getElementById('prof-name').innerText = userMe.fullName;
+                }
+
+                const serviceRes = await fetch('/api/services');
+                if (serviceRes.ok) {
+                    allServices = await serviceRes.json();
+                    changePlatform('Tiktok', document.querySelector('button[onclick*="Tiktok"]'));
+                }
+                loadOrders();
+                loadTickets();
+                loadTransactions();
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadOrders() {
+            const res = await fetch('/api/orders');
+            if (res.ok) {
+                const orders = await res.json();
+                const table = document.getElementById('ordersTable');
+                if (table) {
+                    table.innerHTML = orders.length === 0 ? '<tr><td colspan="6" class="p-10 text-center text-slate-500">Henüz sipariş yok.</td></tr>' : '';
+                    orders.forEach(order => {
+                        const statusClass = order.status === 'Beklemede' ? 'bg-amber-500/10 text-amber-500' : (order.status === 'İptal Edildi' ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-500');
+                        table.innerHTML += `
+                            <tr class="hover:bg-white/[0.02]">
+                                <td class="p-4 text-slate-500">#${order.id}</td>
+                                <td class="p-4 font-bold text-white">${order.serviceName}</td>
+                                <td class="p-4 text-center">${order.amount.toLocaleString()}</td>
+                                <td class="p-4 text-center text-indigo-400">${order.price.toFixed(2)} TL</td>
+                                <td class="p-4 text-center"><span class="px-3 py-1 rounded-full text-[9px] font-black ${statusClass}">${order.status}</span></td>
+                                <td class="p-4 text-slate-500">${new Date(order.createdAt).toLocaleDateString('tr-TR')}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            }
+        }
+
+        async function loadTickets() {
+            const res = await fetch('/api/tickets');
+            if (res.ok) {
+                const tickets = await res.json();
+                const list = document.getElementById('ticketsList');
+                list.innerHTML = tickets.length === 0 ? '<p class="text-xs text-slate-500">Açılmış destek talebi bulunmuyor.</p>' : '';
+                tickets.forEach(t => {
+                    list.innerHTML += `
+                        <div class="bg-black/20 p-4 rounded-xl border border-white/5 flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold text-xs text-white">${t.subject}</h4>
+                                <p class="text-[10px] text-slate-500">${new Date(t.createdAt).toLocaleString()}</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-[9px] font-bold px-3 py-1 rounded bg-indigo-600/20 text-indigo-400 uppercase">${t.status}</span>
+                                <button onclick="openTicketUser(${t.id}, '${t.subject.replace(/'/g, "\'")}')" class="bg-white/10 hover:bg-white/20 text-white font-bold py-1 px-3 rounded text-[10px] transition-all"><i class="fas fa-reply mr-1"></i> Cevaplar</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        
+        async function openTicketUser(id, subject) {
+            document.getElementById('modal-ticket-subject-user').innerText = subject;
+            const res = await fetch(`/api/tickets/${id}`);
+            if (res.ok) {
+                const msgs = await res.json();
+                const chat = document.getElementById('ticket-chat-user');
+                chat.innerHTML = '';
+                msgs.forEach(m => chat.innerHTML += `<div class="mb-2 ${m.isAdmin ? 'text-left' : 'text-right'}"><span class="inline-block p-2 rounded-lg ${m.isAdmin ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-white'}">${m.message}</span></div>`);
+                document.getElementById('ticket-modal-user').classList.remove('hidden');
+                
+                document.getElementById('btn-send-reply-user').onclick = async () => {
+                    const message = document.getElementById('ticket-reply-msg-user').value;
+                    if(!message) return;
+                    const rRes = await fetch(`/api/tickets/${id}/reply`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message }) });
+                    if(rRes.ok) { document.getElementById('ticket-reply-msg-user').value = ''; openTicketUser(id, subject); }
+                }
+            }
+        }
+
+        async function createTicket() {
+            const subject = document.getElementById('ticketSubject').value;
+            const message = document.getElementById('ticketMessage').value;
+            if(!subject || !message) return;
+            const res = await fetch('/api/tickets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subject, message })
+            });
+            if (res.ok) {
+                showToast('Talep oluşturuldu!', 'success');
+                document.getElementById('ticketSubject').value = '';
+                document.getElementById('ticketMessage').value = '';
+                loadTickets();
+            }
+        }
+
+        async function redeemCoupon() {
+            const code = document.getElementById('couponCode').value;
+            if(!code) return;
+            const res = await fetch('/api/coupons/redeem', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast(data.message, 'success');
+                document.getElementById('couponCode').value = '';
+                loadAllData();
             } else {
-                window.location.href = '/';
+                showToast(data.error, 'error');
             }
         }
 
         function changePlatform(p, btn) {
             currentPlatform = p;
-            
-            // Buton aktiflik durumu
             document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            // Select box güncelle
-            const serviceSelect = document.getElementById('serviceType');
-            serviceSelect.innerHTML = "";
-            for (let key in data[p].services) {
-                serviceSelect.innerHTML += `<option value="${key}">${data[p].services[key]}</option>`;
-            }
-            
+            if(btn) btn.classList.add('active');
+            const select = document.getElementById('serviceType');
+            select.innerHTML = "";
+            allServices.filter(s => s.category.toLowerCase() === p.toLowerCase()).forEach(s => {
+                select.innerHTML += `<option value="${s.id}" data-price="${s.price}">${s.name}</option>`;
+            });
             renderPackages();
         }
 
         function renderPackages() {
             const grid = document.getElementById('packageGrid');
-            const service = document.getElementById('serviceType').value;
-            const basePrice = data[currentPlatform].basePrices[service];
-            
+            const select = document.getElementById('serviceType');
+            if (!select || !select.value) { grid.innerHTML = ''; return; }
+            const selected = select.options[select.selectedIndex];
+            const basePrice = parseFloat(selected.getAttribute('data-price'));
             grid.innerHTML = "";
-
             amounts.forEach(amount => {
-                const totalPrice = Math.ceil((amount / 1000) * basePrice);
+                const price = Math.ceil((amount / 1000) * basePrice);
                 grid.innerHTML += `
-                    <div class="cyber-card p-6 border-t-2 border-purple-600">
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-[9px] font-black text-purple-400 tracking-widest">${data[currentPlatform].name}</span>
-                            <span class="bg-green-500/20 text-green-500 text-[8px] px-2 py-0.5 rounded font-bold">AKTİF</span>
-                        </div>
-                        <h4 class="text-3xl font-black">${amount.toLocaleString()}</h4>
-                        <p class="text-[10px] text-gray-500 font-bold mb-6 uppercase">Adet ${data[currentPlatform].services[service]}</p>
-                        <div class="flex justify-between items-center border-t border-white/5 pt-4">
-                            <div>
-                                <span class="text-2xl font-black">${totalPrice}</span>
-                                <span class="text-xs text-purple-500 font-bold ml-1">TL</span>
+                    <div class="glass-card p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">${currentPlatform}</span>
                             </div>
-                            <button onclick="demoSatinAl('${amount}', '${data[currentPlatform].services[service]}', '${totalPrice}')" class="btn-buy text-white px-4 py-2 rounded-lg font-bold text-xs">SATIN AL</button>
+                            <h4 class="text-3xl font-black mb-1">${amount.toLocaleString()}</h4>
+                            <p class="text-[10px] text-slate-500 font-bold mb-6 uppercase leading-tight">${selected.text}</p>
+                        </div>
+                        <div class="flex justify-between items-center pt-4 border-t border-white/5">
+                            <div class="text-2xl font-black">${price} <span class="text-xs text-indigo-500">TL</span></div>
+                            <button onclick="satinAl('${amount}', '${selected.text}', '${price}', '${selected.value}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-bold text-[10px] uppercase transition">Satın Al</button>
                         </div>
                     </div>
                 `;
             });
         }
 
-        async function demoSatinAl(amount, service, price) {
-            const numericPrice = parseFloat(price);
+        async function satinAl(amount, service, price, serviceId) {
+            const link = document.getElementById('targetLink').value;
+            if (!link) return showToast('Lütfen hesap adı veya link girin.', 'error');
 
             const res = await fetch('/api/purchase', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ price: numericPrice, service, amount })
+                body: JSON.stringify({ price: parseFloat(price), service, amount, link, serviceId })
             });
+            if (res.ok) { showToast('Sipariş başarıyla oluşturuldu!', 'success'); showOrderAlert(price); }
+            else { const err = await res.json(); showToast('Hata: ' + err.error, 'error'); }
+        }
 
-            if (res.ok) {
-                const data = await res.json();
-                
-                // WhatsApp Mesajı Hazırla
-                const resMe = await fetch('/api/me');
-                const user = await resMe.json();
-                const message = `Selam Başkan, %0A%0A*YENİ SİPARİŞ BİLDİRİMİ*%0A--------------------------%0A👤 *Kullanıcı:* ${user.fullName}%0A📦 *Hizmet:* ${service}%0A🔢 *Miktar:* ${amount}%0A💰 *Tutar:* ${price} TL%0A--------------------------%0ABakiye başarıyla düşüldü, işlem onaylandı.`;
-                const whatsappUrl = `https://wa.me/905514799252?text=${message}`;
-                
-                alert('Ödeme Başarılı! Bakiyenizden düşüldü ve siparişiniz Başkan\'a iletiliyor.');
-                
-                // Sayfayı yenile ki yeni bakiye gözüksün
-                loadData();
-                
-                // WhatsApp'ı aç
-                window.open(whatsappUrl, '_blank');
-            } else {
-                const errorData = await res.json();
-                alert(`Hata: ${errorData.error}`);
+        function switchTab(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('section-' + id).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            if (id === 'transactions') loadTransactions();
+            if (id === 'tickets') loadTickets();
+            if (id === 'quick-order') openQuickOrder();
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        async function changePassword() {
+            const pass = document.getElementById('newPass').value;
+            const confirm = document.getElementById('newPassConfirm').value;
+            if (!pass || pass !== confirm) return showToast('Şifreler eşleşmiyor.', 'error');
+            const res = await fetch('/api/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ newPassword: pass })
+            });
+            if (res.ok) { 
+                showToast('Şifre güncellendi.', 'success'); 
+                document.getElementById('newPass').value = ''; 
+                document.getElementById('newPassConfirm').value = ''; 
             }
         }
 
-        // İlk açılışta TikTok'u yükle
-        window.onload = () => {
-            loadData();
-            const ttBtn = document.querySelector('button[onclick*="tt"]');
-            changePlatform('tt', ttBtn);
-        };
-    </script>
+        // Hızlı Sipariş Fonksiyonları
+        function openQuickOrder() {
+            const catSelect = document.getElementById('quick-category');
+            const categories = [...new Set(allServices.map(s => s.category))];
+            
+            catSelect.innerHTML = categories.map(c => {
+                const safeCat = c ? c.replace(/"/g, '&quot;') : '';
+                return `<option value="${safeCat}">${safeCat}</option>`;
+            }).join('');
+            
+            filterQuickServices();
+            
+        }
 
+        function filterQuickServices() {
+            const cat = document.getElementById('quick-category').value;
+            const searchInput = document.getElementById('quick-search');
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+            const quickSelect = document.getElementById('quick-service');
+            
+            const filtered = allServices.filter(s => {
+                const safeCat = s.category ? s.category.replace(/"/g, '&quot;') : '';
+                const matchCat = safeCat === cat;
+                const matchSearch = s.name && s.name.toLowerCase().includes(search);
+                return matchCat && (!search || matchSearch);
+            });
+            
+            quickSelect.innerHTML = filtered.map(s => {
+                const safeName = s.name ? s.name.replace(/"/g, '&quot;') : '';
+                return `<option value="${s.id}" data-price="${s.price}">${safeName}</option>`;
+            }).join('');
+            
+            updateQuickPrice();
+        }
+
+        
+
+        function updateQuickPrice() {
+            const select = document.getElementById('quick-service');
+            const price = select.options[select.selectedIndex]?.dataset.price || 0;
+            const amount = document.getElementById('quick-amount').value || 0;
+            const total = (price * amount / 1000).toFixed(2);
+            document.getElementById('quick-total').innerText = total + " TL";
+        }
+
+        async function submitQuickOrder() {
+            const serviceId = document.getElementById('quick-service').value;
+            const select = document.getElementById('quick-service');
+            const serviceName = select.options[select.selectedIndex].text;
+            const pricePerThousand = select.options[select.selectedIndex].dataset.price;
+            const amount = parseInt(document.getElementById('quick-amount').value);
+            const link = document.getElementById('quick-link').value;
+
+            if (amount < 100) {
+                showToast("Minimum sipariş adedi 100'dür!", "error");
+                return;
+            }
+            if (!link) {
+                showToast("Lütfen bir link veya kullanıcı adı girin!", "error");
+                return;
+            }
+
+            const totalPrice = (pricePerThousand * amount / 1000).toFixed(2);
+
+            try {
+                const res = await fetch('/api/purchase', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ price: totalPrice, service: serviceName, amount, link, serviceId })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message, "success");
+                    showOrderAlert(totalPrice);
+                } else {
+                    showToast(data.error, "error");
+                }
+            } catch (e) {
+                showToast("Bağlantı hatası!", "error");
+            }
+        }
+
+        
+        async function showOrderAlert(priceSpent) {
+            await loadAllData(); // Update balances first
+            const currentBalance = document.getElementById('stat-balance').innerText;
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            
+            document.getElementById('alert-time').innerText = timeStr;
+            document.getElementById('alert-price').innerText = parseFloat(priceSpent).toFixed(2) + ' TL';
+            document.getElementById('alert-balance').innerText = currentBalance;
+            
+            const alertDiv = document.getElementById('order-success-alert');
+            alertDiv.classList.remove('hidden');
+            setTimeout(() => { alertDiv.classList.add('hidden'); }, 8000);
+        }
+
+        window.onload = loadAllData;
+    </script>
 </body>
 </html>

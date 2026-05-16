@@ -3,188 +3,461 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Balance Manager | Admin Panel</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        .admin-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .admin-controls input {
-            width: 80px;
-            padding: 0.4rem;
-        }
-        .btn-delete {
-            background: #ef4444 !important;
-            margin-left: 5px;
-        }
-        .floating-support {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: linear-gradient(135deg, #bc13fe, #25d366);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.8rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 1000;
-            text-decoration: none;
-        }
-        .floating-support:hover {
-            transform: scale(1.1) rotate(10deg);
-            box-shadow: 0 15px 35px rgba(188, 19, 254, 0.4);
-        }
-        .floating-support::after {
-            content: 'Destek';
-            position: absolute;
-            right: 70px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 5px 12px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            opacity: 0;
-            pointer-events: none;
-            transition: 0.3s;
-            white-space: nowrap;
-        }
-        .floating-support:hover::after {
-            opacity: 1;
-            right: 80px;
-        }
-    </style>
+    <title>ARIKBAŞ PANEL | Admin Kontrol</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <div class="container dashboard-container" style="max-width: 1100px;">
-        <h1>Admin Yönetim Paneli</h1>
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body { background: #050811; color: #f8fafc; font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
+        .admin-card { background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 1rem; backdrop-filter: blur(20px); }
+        .tab-btn { padding: 12px 20px; font-weight: 600; color: #94a3b8; border-bottom: 2px solid transparent; transition: 0.3s; font-size: 0.75rem; }
+        .tab-btn.active { color: white; border-bottom-color: #6366f1; }
+        .input-dark { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.5rem; padding: 8px 12px; color: white; outline: none; transition: 0.3s; }
+        .input-dark:focus { border-color: #6366f1; }
+        .btn-primary { background: #6366f1; color: white; padding: 8px 16px; border-radius: 0.5rem; font-weight: 700; transition: 0.3s; }
+        .btn-primary:hover { background: #4f46e5; transform: translateY(-1px); }
+        .btn-danger { background: #ef4444; color: white; padding: 8px 16px; border-radius: 0.5rem; font-weight: 700; }
         
-        <div style="overflow-x: auto;">
-            <table class="user-list">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Kullanıcı Adı</th>
-                        <th>E-posta</th>
-                        <th>Ad Soyad</th>
-                        <th>Bakiye</th>
-                        <th>İşlem</th>
-                    </tr>
-                </thead>
-                <tbody id="user-table-body">
-                    <!-- Veriler buraya gelecek -->
-                </tbody>
-            </table>
+        .bg-blobs { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; filter: blur(80px); opacity: 0.2; }
+        .blob { position: absolute; width: 500px; height: 500px; border-radius: 50%; }
+        .blob-1 { background: #6366f1; top: -100px; left: -100px; }
+        .blob-2 { background: #8b5cf6; bottom: -100px; right: -100px; }
+
+        /* Toast Notifications */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); color: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); display: flex; align-items: center; gap: 12px; min-width: 250px; animation: slideIn 0.3s ease-out; transition: 0.3s; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+            <div>
+                <h1 class="text-3xl font-black text-white tracking-tighter">Ömer Sosyal Medya <span class="text-indigo-500">VIP ADMIN</span></h1>
+                <p class="text-[10px] text-slate-500 font-bold tracking-widest uppercase">Kontrol Merkezi v9.0</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="location.href='/dashboard'" class="text-xs font-bold text-slate-400 hover:text-white px-4 py-2 border border-white/5 rounded-lg transition">Müşteri Paneli</button>
+                <button onclick="location.href='/logout'" class="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-500 hover:text-white transition">Çıkış Yap</button>
+            </div>
+        </header>
+
+        <!-- İstatistik Grafiği -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="lg:col-span-2 admin-card p-8">
+                <h3 class="text-xs font-bold mb-6 text-slate-500 uppercase tracking-widest">Genel Performans</h3>
+                <canvas id="salesChart" height="150"></canvas>
+            </div>
+            <div class="admin-card p-8 flex flex-col justify-between">
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase">Toplam Ciro</p>
+                        <h2 id="global-revenue" class="text-2xl font-black text-emerald-400">0.00 TL</h2>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase">Toplam Kullanıcı</p>
+                        <h2 id="global-users" class="text-2xl font-black text-white">0</h2>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase">Toplam Sipariş</p>
+                        <h2 id="global-orders" class="text-2xl font-black text-indigo-400">0</h2>
+                    </div>
+                </div>
+                <div class="pt-6 border-t border-white/5 flex justify-between items-center">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase">Kasadaki Bakiye</p>
+                    <h2 id="global-balances" class="text-lg font-bold text-amber-400">0.00 TL</h2>
+                </div>
+            </div>
         </div>
 
-        <button class="logout-btn" onclick="location.href='/logout'">Çıkış Yap</button>
-
-        <h1 style="margin-top: 4rem;">Hizmet Yönetimi (Fiyat Listesi)</h1>
-        <div class="stats-card" style="text-align: left;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 2rem;">
-                <input type="text" id="srv-cat" placeholder="Kategori (Örn: Instagram)">
-                <input type="text" id="srv-name" placeholder="Hizmet Adı">
-                <input type="number" id="srv-price" placeholder="Fiyat (1000 adet)">
-                <input type="number" id="srv-min" placeholder="Min" value="100">
-                <input type="number" id="srv-max" placeholder="Max" value="10000">
-                <button onclick="addService()" style="margin-top: 0;">Ekle</button>
+        <!-- Duyuru & Kupon -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div class="admin-card p-6 border-l-4 border-indigo-500">
+                <h3 class="text-xs font-bold mb-4 text-slate-400 uppercase tracking-widest">Duyuru Paneli</h3>
+                <div class="flex gap-4">
+                    <input type="text" id="announcement-input" class="input-dark flex-grow text-xs" placeholder="Kayan yazı...">
+                    <button onclick="updateAnnouncement()" class="btn-primary text-xs whitespace-nowrap">GÜNCELLE</button>
+                </div>
             </div>
-            
-            <div style="overflow-x: auto;">
-                <table class="user-list">
-                    <thead>
-                        <tr>
-                            <th>Kategori</th>
-                            <th>Hizmet Adı</th>
-                            <th>Fiyat</th>
-                            <th>İşlem</th>
-                        </tr>
+            <div class="admin-card p-6 border-l-4 border-emerald-500">
+                <h3 class="text-xs font-bold mb-4 text-slate-400 uppercase tracking-widest">Yeni Kupon</h3>
+                <div class="flex gap-2">
+                    <input type="text" id="cp-code" class="input-dark w-1/3 text-xs" placeholder="KOD">
+                    <input type="number" id="cp-amt" class="input-dark w-1/3 text-xs" placeholder="TL">
+                    <button onclick="addCoupon()" class="btn-primary text-xs">OLUŞTUR</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sekmeler -->
+        <div class="flex gap-2 mb-6 border-b border-white/5 overflow-x-auto">
+            <button onclick="switchTab('orders')" id="tab-orders" class="tab-btn active uppercase tracking-tighter">Sipariş Yönetimi</button>
+            <button onclick="switchTab('users')" id="tab-users" class="tab-btn uppercase tracking-tighter">Kullanıcılar</button>
+            <button onclick="switchTab('tickets')" id="tab-tickets" class="tab-btn uppercase tracking-tighter">Destek</button>
+            <button onclick="switchTab('services')" id="tab-services" class="tab-btn uppercase tracking-tighter">Servisler</button>
+            <button onclick="switchTab('logs')" id="tab-logs" class="tab-btn uppercase tracking-tighter">Loglar</button>
+        </div>
+
+        <!-- SİPARİŞ YÖNETİMİ -->
+        <section id="section-orders" class="admin-card overflow-hidden">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-800/30">
+                    <tr class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                        <th class="p-4">ID</th>
+                        <th class="p-4">Kullanıcı</th>
+                        <th class="p-4">Servis / Link</th>
+                        <th class="p-4">Miktar / Fiyat</th>
+                        <th class="p-4">Durum</th>
+                        <th class="p-4">Yönet</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-orders-body" class="divide-y divide-white/5"></tbody>
+            </table>
+        </section>
+
+        <script>
+            async function checkApiStatus(id) {
+                const res = await fetch(`/api/admin/orders/${id}/status-check`);
+                if (res.ok) {
+                    const data = await res.json();
+                    alert(`API Durumu: ${data.status}\nKalan: ${data.remains}\nÜcret: ${data.charge} ${data.currency}`);
+                } else {
+                    alert("Durum sorgulanamadı.");
+                }
+            }
+        </script>
+
+        <!-- KULLANICI LİSTESİ -->
+        <section id="section-users" class="admin-card hidden overflow-hidden">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-800/30">
+                    <tr class="text-[10px] text-slate-500 font-bold uppercase">
+                        <th class="p-4">ID</th>
+                        <th class="p-4">Kullanıcı</th>
+                        <th class="p-4">Bakiye</th>
+                        <th class="p-4">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="user-table-body" class="divide-y divide-white/5"></tbody>
+            </table>
+        </section>
+
+        <!-- DESTEK YÖNETİMİ -->
+        <section id="section-tickets" class="admin-card hidden overflow-hidden">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-800/30">
+                    <tr class="text-[10px] text-slate-500 font-bold uppercase">
+                        <th class="p-4">ID</th>
+                        <th class="p-4">Kullanıcı</th>
+                        <th class="p-4">Konu</th>
+                        <th class="p-4">Durum</th>
+                        <th class="p-4">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-tickets-body" class="divide-y divide-white/5"></tbody>
+            </table>
+        </section>
+
+        <!-- SERVİSLER -->
+        <section id="section-services" class="hidden space-y-6">
+            <div class="admin-card overflow-hidden">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-800/30 text-[10px] text-slate-500 uppercase">
+                        <tr><th class="p-4">ID</th><th class="p-4">Kategori</th><th class="p-4">Ad</th><th class="p-4">Fiyat (1000)</th><th class="p-4">API ID</th><th class="p-4">İşlem</th></tr>
                     </thead>
-                    <tbody id="admin-services-body">
-                        <!-- Veriler buraya gelecek -->
-                    </tbody>
+                    <tbody id="admin-services-body" class="divide-y divide-white/5"></tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- LOGLAR -->
+        <section id="section-logs" class="admin-card hidden overflow-hidden">
+            <table class="w-full text-left text-xs text-slate-400">
+                <tbody id="admin-logs-body" class="divide-y divide-white/5"></tbody>
+            </table>
+        </section>
+
+    </div>
+
+    <!-- Toast Bildirimleri -->
+    <div id="toast-container"></div>
+
+    <!-- Ticket Modal -->
+    <div id="ticket-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden z-[3000] justify-center items-center p-4">
+        <div class="admin-card p-8 w-full max-w-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="modal-ticket-subject" class="font-bold text-sm">Destek Talebi</h3>
+                <button onclick="document.getElementById('ticket-modal').classList.add('hidden')" class="text-slate-500"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="ticket-chat" class="space-y-3 max-h-60 overflow-y-auto mb-6 p-4 bg-black/40 rounded-xl text-[11px]"></div>
+            <div class="flex gap-2">
+                <input type="text" id="ticket-reply-msg" class="input-dark flex-grow text-xs" placeholder="Cevabınız...">
+                <button id="btn-send-reply" class="btn-primary text-xs">GÖNDER</button>
             </div>
         </div>
     </div>
 
     <script>
+        let currentTicketId = null;
+
+        async function initDashboard() {
+            try {
+                const res = await fetch('/api/admin/global-stats');
+                if (res.ok) {
+                    const stats = await res.json();
+                    document.getElementById('global-users').innerText = stats.totalUsers;
+                    document.getElementById('global-orders').innerText = stats.totalOrders;
+                    document.getElementById('global-revenue').innerText = (stats.totalRevenue || 0).toFixed(2) + " TL";
+                    document.getElementById('global-balances').innerText = (stats.totalBalances || 0).toFixed(2) + " TL";
+                    
+                    // Kategori Grafiği
+                    const catRes = await fetch('/api/admin/stats/categories');
+                    const catData = await catRes.json();
+                    
+                    const ctx = document.getElementById('salesChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: catData.map(d => d.category),
+                            datasets: [{
+                                label: 'Sipariş Sayısı',
+                                data: catData.map(d => d.count),
+                                backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+                                borderRadius: 8
+                            }]
+                        },
+                        options: { 
+                            plugins: { legend: { display: false } }, 
+                            scales: { 
+                                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, 
+                                x: { grid: { display: false } } 
+                            } 
+                        }
+                    });
+                }
+                const annRes = await fetch('/api/settings/announcement');
+                if (annRes.ok) {
+                    const data = await annRes.json();
+                    document.getElementById('announcement-input').value = data.announcement;
+                }
+                loadAdminOrders();
+            } catch (e) { console.error("Başlatma hatası:", e); }
+        }
+
+        async function loadAdminOrders() {
+            const tbody = document.getElementById('admin-orders-body');
+            try {
+                const res = await fetch('/api/admin/orders');
+                if (!res.ok) throw new Error("404 veya Yetki Hatası");
+                const orders = await res.json();
+                tbody.innerHTML = orders.length === 0 ? '<tr><td colspan="6" class="p-10 text-center text-slate-500">Sipariş bulunamadı.</td></tr>' : '';
+                orders.forEach(o => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-white/[0.02] transition">
+                            <td class="p-4 text-slate-500 font-mono">#${o.id}</td>
+                            <td class="p-4 font-bold text-white">${o.username}</td>
+                            <td class="p-4">
+                                <p class="font-bold text-indigo-400">${o.serviceName}</p>
+                                <p class="text-[10px] text-slate-500 italic truncate max-w-[150px]">${o.link || 'LİNK YOK'}</p>
+                            </td>
+                            <td class="p-4 font-black">${o.amount.toLocaleString()} / ${o.price.toFixed(2)} TL</td>
+                            <td class="p-4"><span class="px-3 py-1 rounded-full text-[9px] font-black uppercase ${o.status === 'Beklemede' ? 'bg-amber-500/10 text-amber-500' : 'bg-emerald-500/10 text-emerald-500'}">${o.status}</span></td>
+                            <td class="p-4 flex gap-2">
+                                <select onchange="updateOrderStatus(${o.id}, this.value)" class="input-dark text-[10px] h-8 !py-0 cursor-pointer">
+                                    <option value="Beklemede" ${o.status === 'Beklemede' ? 'selected' : ''}>Beklemede</option>
+                                    <option value="Tamamlandı" ${o.status === 'Tamamlandı' ? 'selected' : ''}>Tamamlandı</option>
+                                    <option value="İptal Edildi" ${o.status === 'İptal Edildi' ? 'selected' : ''}>İptal</option>
+                                </select>
+                                <button onclick="checkApiStatus(${o.id})" class="bg-indigo-500/10 text-indigo-400 p-2 rounded-lg hover:bg-indigo-500 hover:text-white transition" title="API Durumu Sorgula">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) { tbody.innerHTML = `<tr><td colspan="6" class="p-10 text-center text-red-500">${e.message}</td></tr>`; }
+        }
+
+        async function updateOrderStatus(orderId, status) {
+            const res = await fetch('/api/admin/orders/update-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId, status })
+            });
+            if (res.ok) { loadAdminOrders(); initDashboard(); }
+            else { const err = await res.json(); alert("Hata: " + err.error); loadAdminOrders(); }
+        }
+
         async function loadUsers() {
             const res = await fetch('/api/users');
             if (res.ok) {
                 const users = await res.json();
                 const tbody = document.getElementById('user-table-body');
                 tbody.innerHTML = '';
-                
-                users.forEach(user => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${user.id}</td>
-                        <td>${user.username}</td>
-                        <td>${user.email}</td>
-                        <td>${user.fullName}</td>
-                        <td id="balance-${user.id}">₺${user.balance.toLocaleString('tr-TR')}</td>
-                        <td class="admin-controls">
-                            <input type="number" id="amount-${user.id}" placeholder="Miktar" value="100">
-                            <button class="btn-small" onclick="updateBalance(${user.id})">Yükle</button>
-                            <button class="btn-small btn-delete" onclick="deleteUser(${user.id})">Sil</button>
-                        </td>
+                users.forEach(u => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-white/[0.01]">
+                            <td class="p-4 text-slate-500">#${u.id}</td>
+                            <td class="p-4 font-bold text-white">${u.username}</td>
+                            <td class="p-4 font-black text-indigo-400">${u.balance.toFixed(2)} TL</td>
+                            <td class="p-4">
+                                <input type="number" id="amt-${u.id}" class="input-dark w-16 h-7 text-[10px]" placeholder="TL">
+                                <button onclick="updateBalance(${u.id})" class="btn-primary !px-3 !py-1 text-[10px]">EKLE</button>
+                            </td>
+                        </tr>
                     `;
-                    tbody.appendChild(tr);
                 });
-            } else {
-                window.location.href = '/';
             }
         }
 
         async function updateBalance(userId) {
-            const amount = parseFloat(document.getElementById(`amount-${userId}`).value);
-            if (isNaN(amount)) return alert('Geçerli bir miktar girin.');
-
+            const amount = parseFloat(document.getElementById(`amt-${userId}`).value);
             const res = await fetch('/api/admin/update-balance', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, amount })
             });
-
-            if (res.ok) {
-                alert('Bakiye başarıyla yüklendi!');
-                loadUsers();
-            } else {
-                alert('Hata oluştu.');
-            }
+            if (res.ok) { alert("Bakiye eklendi"); loadUsers(); initDashboard(); }
         }
 
-        async function deleteUser(userId) {
-            if (!confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) return;
-
-            const res = await fetch('/api/admin/delete-user', {
+        async function updateAnnouncement() {
+            const value = document.getElementById('announcement-input').value;
+            const res = await fetch('/api/admin/settings/announcement', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId })
+                body: JSON.stringify({ value })
             });
+            if (res.ok) alert("Duyuru güncellendi");
+        }
 
+        async function addCoupon() {
+            const code = document.getElementById('cp-code').value;
+            const amount = document.getElementById('cp-amt').value;
+            const res = await fetch('/api/admin/coupons', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code, amount: parseFloat(amount), limit: 100 })
+            });
+            if (res.ok) { alert("Kupon eklendi"); document.getElementById('cp-code').value = ''; }
+        }
+
+        function switchTab(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById('section-' + id).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            if(id === 'orders') loadAdminOrders();
+            if(id === 'users') loadUsers();
+            if(id === 'services') loadServices();
+            if(id === 'tickets') loadAdminTickets();
+            if(id === 'logs') loadLogs();
+        }
+
+        async function loadServices() {
+            const res = await fetch('/api/services');
             if (res.ok) {
-                alert('Kullanıcı silindi.');
-                loadUsers();
-            } else {
-                const data = await res.json();
-                alert(data.error || 'Silme hatası.');
+                const services = await res.json();
+                const tbody = document.getElementById('admin-services-body');
+                tbody.innerHTML = '';
+                services.forEach(s => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-white/[0.01]">
+                            <td class="p-4 text-slate-500 font-mono text-[10px]">#${s.id}</td>
+                            <td class="p-4 font-bold text-white">${s.category}</td>
+                            <td class="p-4 text-slate-400">${s.name}</td>
+                            <td class="p-4 font-black text-indigo-400">${s.price} TL</td>
+                            <td class="p-4">
+                                <input type="number" id="api-id-${s.id}" value="${s.api_service_id || 0}" class="input-dark w-16 h-7 text-[10px]" placeholder="API ID">
+                            </td>
+                            <td class="p-4">
+                                <button onclick="updateServiceApiId(${s.id})" class="btn-primary !px-3 !py-1 text-[10px]">KAYDET</button>
+                            </td>
+                        </tr>`;
+                });
             }
         }
 
-        loadUsers();
+        async function updateServiceApiId(id) {
+            const apiId = document.getElementById(`api-id-${id}`).value;
+            const res = await fetch('/api/admin/services/update-api-id', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, apiId })
+            });
+            if (res.ok) showToast("API ID Güncellendi", "success");
+        }
+
+        async function loadAdminTickets() {
+            const res = await fetch('/api/admin/tickets');
+            if (res.ok) {
+                const tickets = await res.json();
+                const tbody = document.getElementById('admin-tickets-body');
+                tbody.innerHTML = '';
+                tickets.forEach(t => {
+                    tbody.innerHTML += `<tr><td class="p-4">#${t.id}</td><td class="p-4 font-bold">${t.username}</td><td class="p-4">${t.subject}</td><td class="p-4">${t.status}</td><td class="p-4"><button onclick="openTicket(${t.id}, '${t.subject}')" class="btn-primary !py-1 text-[10px]">CEVAPLA</button></td></tr>`;
+                });
+            }
+        }
+
+        async function loadLogs() {
+            const res = await fetch('/api/admin/balance-logs');
+            if (res.ok) {
+                const logs = await res.json();
+                const tbody = document.getElementById('admin-logs-body');
+                tbody.innerHTML = '';
+                logs.forEach(l => {
+                    tbody.innerHTML += `<tr class="text-[10px]"><td class="p-4 text-slate-500">${new Date(l.createdAt).toLocaleString()}</td><td class="p-4 font-bold text-white">${l.username}</td><td class="p-4 italic">${l.description}</td><td class="p-4 font-black ${l.type === 'spent' ? 'text-red-400' : 'text-emerald-400'}">${l.amount} TL</td></tr>`;
+                });
+            }
+        }
+
+        async function openTicket(id, subject) {
+            currentTicketId = id;
+            document.getElementById('modal-ticket-subject').innerText = subject;
+            const res = await fetch(`/api/tickets/${id}`);
+            if (res.ok) {
+                const msgs = await res.json();
+                const chat = document.getElementById('ticket-chat');
+                chat.innerHTML = '';
+                msgs.forEach(m => chat.innerHTML += `<div class="mb-2 ${m.isAdmin ? 'text-right' : 'text-left'}"><span class="inline-block p-2 rounded-lg ${m.isAdmin ? 'bg-indigo-600' : 'bg-slate-800'}">${m.message}</span></div>`);
+                document.getElementById('ticket-modal').classList.remove('hidden');
+                document.getElementById('btn-send-reply').onclick = async () => {
+                    const message = document.getElementById('ticket-reply-msg').value;
+                    const rRes = await fetch(`/api/tickets/${id}/reply`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message }) });
+                    if(rRes.ok) { document.getElementById('ticket-reply-msg').value = ''; openTicket(id, subject); }
+                }
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            let icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 5000);
+        }
+
+        const socket = io();
+        socket.on('notification', (data) => {
+            // Admin olarak tüm bildirimleri görebiliriz veya sadece genel bildirimleri
+            if (data.type === 'info') showToast(data.message, 'success');
+        });
+
+        window.onload = initDashboard;
     </script>
-    <a href="support.html" class="floating-support">
-        <i class="fab fa-whatsapp"></i>
-    </a>
 </body>
 </html>
