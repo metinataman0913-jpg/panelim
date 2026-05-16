@@ -63,16 +63,16 @@ db.serialize(() => {
             db.get("SELECT COUNT(*) as count FROM services", (err, row) => {
                 if (row && row.count === 0) {
                     const stmt = db.prepare("INSERT INTO services (category, name, price, min_order, max_order) VALUES (?, ?, ?, ?, ?)");
-                    stmt.run('Instagram', 'Takipçi (Garantili)', 675.00, 100, 50000);
-                    stmt.run('Instagram', 'Beğeni (Global)', 300.00, 50, 100000);
-                    stmt.run('Instagram', 'Video İzlenme', 150.00, 100, 100000);
-                    stmt.run('Tiktok', 'Takipçi (Premium)', 825.00, 100, 50000);
-                    stmt.run('Tiktok', 'Beğeni (Keşfet)', 337.50, 50, 100000);
-                    stmt.run('Tiktok', 'İzlenme (Anlık)', 187.50, 100, 1000000);
-                    stmt.run('Youtube', 'Abone (Global)', 2250.00, 100, 10000);
-                    stmt.run('Youtube', 'İzlenme (Organik)', 1125.00, 100, 50000);
-                    stmt.run('Telegram', 'Kanal Üyesi', 450.00, 100, 20000);
-                    stmt.run('Telegram', 'Post Görüntülenme', 112.50, 100, 100000);
+                    stmt.run('Instagram', 'Takipçi (Garantili)', 90, 100, 50000);
+                    stmt.run('Instagram', 'Beğeni (Global)', 40, 50, 100000);
+                    stmt.run('Instagram', 'Video İzlenme', 20, 100, 100000);
+                    stmt.run('Tiktok', 'Takipçi (Premium)', 110, 100, 50000);
+                    stmt.run('Tiktok', 'Beğeni (Keşfet)', 45, 50, 100000);
+                    stmt.run('Tiktok', 'İzlenme (Anlık)', 25, 100, 1000000);
+                    stmt.run('Youtube', 'Abone (Global)', 300, 100, 10000);
+                    stmt.run('Youtube', 'İzlenme (Organik)', 150, 100, 50000);
+                    stmt.run('Telegram', 'Kanal Üyesi', 360, 100, 20000);
+                    stmt.run('Telegram', 'Post Görüntülenme', 90, 100, 100000);
                     stmt.finalize();
                 }
             });
